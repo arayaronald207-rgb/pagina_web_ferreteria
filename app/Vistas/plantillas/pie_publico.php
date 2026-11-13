@@ -12,7 +12,7 @@
                 <a class="pie-pagina__telefono" href="tel:+50670988980">7098-8980</a>
             </div>
             <div class="pie-pagina__acciones">
-                <a class="pie-pagina__mapa-enlace" href="https://www.google.com/maps/search/?api=1&amp;query=San+Jos%C3%A9%2C+P%C3%A9rez+Zeled%C3%B3n%2C+Platanares%2C+contiguo+al+Supermercado+El+Cruce%2C+Mollejones%2C+Costa+Rica" target="_blank" rel="noopener noreferrer">
+                <a class="pie-pagina__mapa-enlace" href="https://maps.app.goo.gl/S6ajUgCx18XNHuiQ8" target="_blank" rel="noopener noreferrer">
                     Cómo llegar <span aria-hidden="true">↗</span>
                 </a>
                 <a class="pie-pagina__whatsapp-enlace" href="https://wa.me/50670988980" target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp, se abre en una pestaña nueva">
@@ -24,10 +24,15 @@
                 </a>
             </div>
         </section>
-        <div class="mapa-reserva" role="region" aria-label="Espacio reservado para integrar un mapa cuando se confirme la ubicación exacta">
-            <span class="mapa-reserva__marca" aria-hidden="true"></span>
-            <strong>Espacio reservado para mapa integrado</strong>
-            <span>La ubicación exacta está pendiente de confirmación.</span>
+        <div class="mapa-ubicacion">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3938.1804566208284!2d-83.6416675!3d9.2281516!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8fa153559c8ea60f%3A0x928e0d2244812430!2sFerreter%C3%ADa%20el%20Cruce!5e0!3m2!1ses!2scr!4v1794583019693!5m2!1ses!2scr"
+                title="Ubicación de Ferretería El Cruce en Mollejones de Platanares, Pérez Zeledón"
+                width="600" height="450"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+            </iframe>
         </div>
     </div>
 </footer>

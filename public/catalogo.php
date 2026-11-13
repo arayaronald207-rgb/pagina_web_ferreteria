@@ -142,24 +142,23 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
     <link rel="stylesheet" href="assets/css/catalogo.css">
     <script src="assets/js/navegacion.js" defer></script>
 </head>
-<body>
+<body class="sitio-publico">
     <a class="salto-contenido" href="#contenido">Saltar al contenido</a>
 
     <?php require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Vistas' . DIRECTORY_SEPARATOR . 'plantillas' . DIRECTORY_SEPARATOR . 'cabecera_publica.php'; ?>
 
     <main class="catalogo" id="contenido">
         <section class="catalogo__introduccion contenedor" aria-labelledby="titulo-catalogo">
-            <p class="catalogo__ceja">FERRETERÍA EL CRUCE</p>
             <h1 id="titulo-catalogo">Catálogo de productos</h1>
             <p>Consulta los productos publicados por la ferretería.</p>
         </section>
 
         <div class="contenedor">
             <form class="catalogo__panel-filtros" id="filtros" method="get" action="catalogo.php">
-                <div class="catalogo__campo">
-                    <label for="buscar_catalogo">Buscar por nombre</label>
-                    <input id="buscar_catalogo" name="buscar" type="search" value="<?= escapar_catalogo($busqueda) ?>" maxlength="120" placeholder="Nombre del producto">
-                </div>
+                <input name="buscar" type="hidden" value="<?= escapar_catalogo($busqueda) ?>">
+                <?php if ($busqueda !== ''): ?>
+                    <p class="catalogo__busqueda-activa">Buscando: <strong><?= escapar_catalogo($busqueda) ?></strong></p>
+                <?php endif; ?>
                 <div class="catalogo__campo">
                     <label for="categoria_catalogo">Categoría</label>
                     <select id="categoria_catalogo" name="categoria">
@@ -169,22 +168,28 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <button class="catalogo__boton" type="submit">Buscar</button>
-                <a class="catalogo__limpiar" href="catalogo.php">Limpiar</a>
+                <button class="catalogo__boton" type="submit">Aplicar categoría</button>
+                <a class="catalogo__limpiar" href="catalogo.php">Limpiar filtros</a>
             </form>
 
             <section class="catalogo__resultados" id="productos" aria-label="Resultados del catálogo" aria-live="polite">
                 <?php if ($error_catalogo): ?>
                     <div class="catalogo__estado catalogo__estado--error" role="alert">
+                        <h2>No pudimos cargar el catálogo</h2>
                         <p>El catálogo no está disponible en este momento. Inténtalo más tarde.</p>
+                        <a class="catalogo__estado-enlace" href="#contacto">Contactar con la ferretería</a>
                     </div>
                 <?php elseif ($productos === [] && $filtros_activos): ?>
                     <div class="catalogo__estado">
+                        <h2>No encontramos coincidencias</h2>
                         <p>No encontramos productos que coincidan con la búsqueda o categoría seleccionada.</p>
+                        <a class="catalogo__estado-enlace" href="catalogo.php">Ver todo el catálogo</a>
                     </div>
                 <?php elseif ($productos === []): ?>
-                    <div class="catalogo__estado">
-                        <p>Aún no hay productos publicados. Vuelve pronto para consultar el catálogo.</p>
+                    <div class="catalogo__estado catalogo__estado--vacio">
+                        <h2>Estamos preparando nuestro catálogo</h2>
+                        <p>Aún no hay productos publicados. Mientras tanto, contáctanos para consultar sobre herramientas y materiales para tu proyecto.</p>
+                        <a class="catalogo__estado-enlace" href="#contacto">Contactar con la ferretería</a>
                     </div>
                 <?php else: ?>
                     <div class="catalogo__rejilla">

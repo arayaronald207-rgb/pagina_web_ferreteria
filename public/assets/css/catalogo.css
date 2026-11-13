@@ -1,10 +1,9 @@
 .catalogo {
-    min-height: 60vh;
-    padding-bottom: 76px;
+    padding-bottom: var(--separacion-secciones);
 }
 
 .catalogo__introduccion {
-    padding-block: 48px 30px;
+    padding-block: clamp(32px, 3vw, 48px) 24px;
 }
 
 .catalogo__ceja {
@@ -17,8 +16,9 @@
 .catalogo__introduccion h1 {
     margin: 0;
     color: var(--azul-profundo);
-    font-size: 42px;
+    font-size: clamp(28px, 3.5vw, 42px);
     line-height: 1.12;
+    overflow-wrap: anywhere;
 }
 
 .catalogo__introduccion p:last-child {
@@ -31,14 +31,27 @@
 
 .catalogo__panel-filtros {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.65fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: end;
     gap: 14px;
-    padding: 18px;
+    padding: var(--espacio-3);
     border: 1px solid var(--linea);
-    border-radius: 4px;
+    border-radius: var(--radio-control);
     background: var(--blanco);
     box-shadow: 0 8px 22px #1536570b;
+}
+
+.catalogo__busqueda-activa {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: #536577;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.catalogo__busqueda-activa strong {
+    color: var(--azul-profundo);
 }
 
 .catalogo__campo {
@@ -53,27 +66,27 @@
     font-weight: 700;
 }
 
-.catalogo__campo input,
 .catalogo__campo select {
     width: 100%;
-    min-height: 44px;
+    min-width: 0;
+    min-height: var(--alto-control);
     padding: 0 12px;
     border: 1px solid #cbd5de;
-    border-radius: 3px;
+    border-radius: var(--radio-control);
     background: #fbfcfd;
     color: var(--azul-profundo);
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .catalogo__boton,
 .catalogo__limpiar {
     display: inline-flex;
-    min-height: 44px;
+    min-height: var(--alto-control);
     align-items: center;
     justify-content: center;
     padding: 0 16px;
     border: 1px solid transparent;
-    border-radius: 3px;
+    border-radius: var(--radio-control);
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
@@ -106,7 +119,7 @@
 }
 
 .catalogo__estado {
-    padding: 32px 24px;
+    padding: clamp(24px, 3vw, 40px);
     border: 1px solid var(--linea);
     border-left: 3px solid var(--azul);
     border-radius: 3px;
@@ -114,6 +127,39 @@
     color: #536577;
     font-size: 14px;
     line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.catalogo__estado h2 {
+    max-width: 38ch;
+    margin: 0 0 12px;
+    color: var(--azul-profundo);
+    font-size: clamp(20px, 2vw, 26px);
+    line-height: 1.25;
+}
+
+.catalogo__estado--vacio {
+    border-left-color: var(--rojo);
+    background: linear-gradient(110deg, var(--blanco), #edf3f8);
+}
+
+.catalogo__estado-enlace {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    max-width: 100%;
+    margin-top: 20px;
+    padding: 10px 16px;
+    border: 1px solid var(--azul);
+    border-radius: 3px;
+    color: var(--azul);
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.catalogo__estado-enlace:hover {
+    background: var(--azul);
+    color: var(--blanco);
 }
 
 .catalogo__estado--error {
@@ -122,12 +168,13 @@
 
 .catalogo__estado p {
     margin: 0;
+    max-width: 64ch;
 }
 
 .catalogo__rejilla {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 245px), 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: clamp(20px, 2vw, 24px);
 }
 
 .producto {
@@ -172,7 +219,7 @@
 
 .producto__contenido {
     display: flex;
-    min-height: 220px;
+    min-height: 190px;
     flex: 1;
     align-items: flex-start;
     flex-direction: column;
@@ -184,6 +231,7 @@
     color: #647383;
     font-size: 10px;
     font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 .producto__contenido h2 {
@@ -208,7 +256,9 @@
     align-items: center;
     gap: 8px;
     margin-top: auto;
-    padding: 0 12px;
+    max-width: 100%;
+    padding: 10px 12px;
+    overflow-wrap: anywhere;
     border: 1px solid #cbd5de;
     border-radius: 3px;
     color: var(--azul);
@@ -228,7 +278,11 @@
     }
 
     .catalogo__panel-filtros {
-        grid-template-columns: minmax(0, 1fr) minmax(180px, 0.8fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .catalogo__campo {
+        grid-column: 1 / -1;
     }
 }
 
@@ -242,7 +296,7 @@
     }
 
     .catalogo__introduccion h1 {
-        font-size: 32px;
+        font-size: clamp(26px, 7vw, 32px);
     }
 
     .catalogo__panel-filtros {
