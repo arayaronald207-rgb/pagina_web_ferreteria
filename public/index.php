@@ -51,7 +51,6 @@ function escapar_portada(string $valor): string
                     <p class="portada-principal__descripcion">Explora nuestras herramientas, materiales y soluciones para construcción, reparación y mantenimiento.</p>
                     <div class="portada-acciones">
                         <a class="boton boton--principal" href="catalogo.php">Explorar productos <span aria-hidden="true">→</span></a>
-                        <a class="portada-enlace" href="https://wa.me/50670988980" target="_blank" rel="noopener noreferrer">Consultar por WhatsApp <span aria-hidden="true">↗</span></a>
                     </div>
                     <button class="portada-cotizacion" type="button" disabled>Solicitar cotización <span>Próximamente</span></button>
                 </div>
@@ -78,9 +77,8 @@ function escapar_portada(string $valor): string
                 <div class="portada-vacio" data-revelar<?= $error_categorias_portada ? ' role="alert"' : '' ?>>
                     <div>
                         <h3><?= $error_categorias_portada ? 'No pudimos cargar las categorías' : 'Estamos organizando nuestras categorías' ?></h3>
-                        <p><?= $error_categorias_portada ? 'Inténtalo más tarde. Mientras tanto, puedes consultarnos directamente sobre lo que necesitas.' : 'Pronto podrás explorar aquí las categorías de nuestro catálogo. Mientras tanto, cuéntanos qué necesitas para tu proyecto.' ?></p>
+                        <p><?= $error_categorias_portada ? 'Inténtalo más tarde. Encontrarás nuestros datos de contacto al pie de esta página.' : 'Pronto podrás explorar aquí las categorías de nuestro catálogo.' ?></p>
                     </div>
-                    <a class="boton boton--secundario" href="https://wa.me/50670988980" target="_blank" rel="noopener noreferrer">Consultar por WhatsApp <span aria-hidden="true">↗</span></a>
                 </div>
             <?php else: ?>
                 <div class="portada-categorias__rejilla">
@@ -98,17 +96,6 @@ function escapar_portada(string $valor): string
             <?php endif; ?>
         </section>
 
-        <section class="portada-ayuda contenedor" aria-labelledby="titulo-ayuda" data-revelar>
-            <div>
-                <p class="portada-etiqueta">Hablemos de tu proyecto</p>
-                <h2 id="titulo-ayuda">De la idea a las herramientas.</h2>
-                <p>Consulta sobre los productos que buscas o visítanos en Mollejones de Platanares.</p>
-            </div>
-            <div class="portada-acciones">
-                <a class="boton boton--principal" href="https://wa.me/50670988980" target="_blank" rel="noopener noreferrer">Escribir por WhatsApp <span aria-hidden="true">↗</span></a>
-                <a class="portada-enlace" href="#contacto">Cómo encontrarnos <span aria-hidden="true">↓</span></a>
-            </div>
-        </section>
     </main>
 
     <?php require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'Vistas' . DIRECTORY_SEPARATOR . 'plantillas' . DIRECTORY_SEPARATOR . 'pie_publico.php'; ?>

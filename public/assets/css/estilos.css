@@ -76,11 +76,11 @@ a {
 
 .salto-contenido {
     position: fixed;
-    z-index: 20;
+    z-index: 40;
     top: 12px;
     left: 12px;
     padding: 12px 16px;
-    transform: translateY(-160%);
+    transform: translateY(calc(-100% - 48px));
     border-radius: 3px;
     background: var(--blanco);
     color: var(--azul);

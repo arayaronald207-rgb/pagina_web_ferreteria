@@ -84,13 +84,8 @@ try {
     $conexion = obtener_conexion();
 
     $consulta_categorias = $conexion->prepare(
-        'SELECT DISTINCT c.nombre
-        FROM categorias AS c
-        INNER JOIN productos AS p ON p.id_categoria = c.id_categoria
-        WHERE p.visible = :visible
-        ORDER BY c.nombre ASC'
+        'SELECT nombre FROM categorias ORDER BY nombre ASC'
     );
-    $consulta_categorias->bindValue(':visible', 1, PDO::PARAM_INT);
     $consulta_categorias->execute();
     $categorias = $consulta_categorias->fetchAll();
 
@@ -178,6 +173,12 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
                         <h2>No pudimos cargar el catálogo</h2>
                         <p>El catálogo no está disponible en este momento. Inténtalo más tarde.</p>
                         <a class="catalogo__estado-enlace" href="#contacto">Contactar con la ferretería</a>
+                    </div>
+                <?php elseif ($productos === [] && $categoria_seleccionada !== null && $busqueda === ''): ?>
+                    <div class="catalogo__estado">
+                        <h2>No hay productos publicados en esta categoría</h2>
+                        <p>La categoría «<?= escapar_catalogo($categoria_seleccionada) ?>» aún no tiene productos disponibles en el catálogo público.</p>
+                        <a class="catalogo__estado-enlace" href="catalogo.php">Ver todo el catálogo</a>
                     </div>
                 <?php elseif ($productos === [] && $filtros_activos): ?>
                     <div class="catalogo__estado">

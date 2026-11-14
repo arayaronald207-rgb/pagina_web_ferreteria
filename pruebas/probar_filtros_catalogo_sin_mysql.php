@@ -14,6 +14,10 @@ $casos = [
     'otra_categoria' => [['buscar' => 'Martillo', 'categoria' => 'Acabados'], ['Martillo de goma']],
     'todas_categorias' => [['buscar' => 'Martillo', 'categoria' => ''], ['Martillo de goma', 'Martillo de prueba']],
     'sin_coincidencias' => [['buscar' => 'Brocha', 'categoria' => 'Herramientas'], []],
+    'categoria_vacia' => [['categoria' => 'Sin productos'], []],
+    'categoria_oculta' => [['categoria' => 'Solo ocultos'], []],
+    'vacia_con_busqueda' => [['buscar' => 'Martillo', 'categoria' => 'Sin productos'], []],
+    'categoria_especial' => [['categoria' => 'Pinturas & decoración "hogar" <prueba>'], []],
     'ocultos' => [['buscar' => 'Oculto'], []],
     'inyeccion' => [['buscar' => "' OR 1=1 --", 'categoria' => "' OR 1=1 --"], []],
     'escape' => [['buscar' => '"><script>alert(1)</script>&'], []],
@@ -70,7 +74,9 @@ try {
     $pdo->exec('CREATE TABLE categorias (id_categoria INTEGER PRIMARY KEY, nombre TEXT)');
     $pdo->exec('CREATE TABLE productos (id_producto INTEGER PRIMARY KEY, id_categoria INTEGER, nombre TEXT, descripcion TEXT, imagen TEXT, visible INTEGER)');
     if ($caso !== 'vacio') {
-        $pdo->exec("INSERT INTO categorias VALUES (1, 'Herramientas'), (2, 'Acabados'), (3, 'Solo ocultos')");
+        $pdo->exec("INSERT INTO categorias VALUES (1, 'Herramientas'), (2, 'Acabados'), (3, 'Solo ocultos'), (4, 'Sin productos')");
+        $insertar = $pdo->prepare('INSERT INTO categorias VALUES (5, :nombre)');
+        $insertar->execute(['nombre' => 'Pinturas & decoración "hogar" <prueba>']);
         $pdo->exec("INSERT INTO productos VALUES
             (1, 1, 'Martillo de prueba', 'Dato ficticio', NULL, 1),
             (2, 2, 'Martillo de goma', 'Dato ficticio', NULL, 1),
@@ -105,13 +111,21 @@ try {
         $opcion = $xpath->query('//select[@name="categoria"]/option[@selected]')->item(0);
         comprobar_filtro($opcion instanceof DOMElement && $opcion->getAttribute('value') === $categoria, 'Se perdió la categoría seleccionada');
     }
+    $categoria_buscador = $xpath->query('//form[@role="search"]/input[@name="categoria"]')->item(0);
+    comprobar_filtro($categoria === '' ? $categoria_buscador === null : $categoria_buscador instanceof DOMElement && $categoria_buscador->getAttribute('value') === $categoria, 'El buscador debe conservar la categoría activa');
     comprobar_filtro($xpath->query('//a[@class="catalogo__limpiar"]')->item(0)->getAttribute('href') === 'catalogo.php', 'Limpiar debe quitar todos los parámetros');
-    comprobar_filtro(!str_contains($html, 'Solo ocultos'), 'Se publicó una categoría sin productos visibles');
+    if ($caso !== 'vacio' && $caso !== 'error') {
+        comprobar_filtro($xpath->query('//select[@name="categoria"]/option')->length === 6, 'Deben ofrecerse todas las categorías, incluso las vacías');
+    }
+    comprobar_filtro(!str_contains($html, 'No debe publicarse'), 'Se publicó un producto oculto');
+    comprobar_filtro(!str_contains($html, '<prueba>'), 'Falta escape en el nombre de categoría');
     comprobar_filtro(!str_contains($html, '<script>alert(1)</script>'), 'Falta escape HTML');
     if ($caso === 'vacio') {
         comprobar_filtro(str_contains($html, 'Estamos preparando nuestro catálogo'), 'Estado vacío incorrecto');
     } elseif ($caso === 'error') {
         comprobar_filtro(str_contains($html, 'No pudimos cargar el catálogo') && !str_contains($html, 'SQLSTATE'), 'Error interno expuesto');
+    } elseif ($esperados === [] && $categoria !== '' && $buscar === '') {
+        comprobar_filtro(str_contains($html, 'No hay productos publicados en esta categoría'), 'Falta explicación de categoría sin productos');
     } elseif ($esperados === []) {
         comprobar_filtro(str_contains($html, 'No encontramos coincidencias'), 'Falta estado sin coincidencias');
     }

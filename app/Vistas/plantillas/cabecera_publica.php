@@ -14,6 +14,9 @@ $termino_busqueda_html = htmlspecialchars($termino_busqueda, ENT_QUOTES | ENT_SU
         </a>
 
         <form class="buscador" role="search" aria-label="Buscar productos" method="get" action="catalogo.php">
+            <?php if (isset($categoria_seleccionada) && is_string($categoria_seleccionada)): ?>
+                <input type="hidden" name="categoria" value="<?= htmlspecialchars($categoria_seleccionada, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+            <?php endif; ?>
             <label class="solo-lectores" for="busqueda_cabecera">Buscar productos por nombre</label>
             <input id="busqueda_cabecera" name="buscar" type="search" placeholder="¿Qué necesitas para tu proyecto?" value="<?= $termino_busqueda_html ?>" maxlength="120">
             <button type="submit" aria-label="Buscar productos">

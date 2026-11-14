@@ -29,9 +29,9 @@
 .portada-categorias { padding-block: clamp(40px, 5vw, 80px); }
 .portada-seccion-cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px 32px; margin-bottom: 28px; }
 .portada-seccion-cabecera > div { min-width: 0; }
-.portada-seccion-cabecera .portada-etiqueta, .portada-ayuda .portada-etiqueta { color: var(--rojo-hover); }
-.portada-seccion-cabecera h2, .portada-ayuda h2 { margin: 0; font-size: clamp(28px, 3vw, 42px); line-height: 1.15; letter-spacing: -.02em; overflow-wrap: anywhere; }
-.portada-seccion-cabecera p:last-child, .portada-ayuda p:last-child { margin: 14px 0 0; color: #536577; line-height: 1.65; font-size: 16px; }
+.portada-seccion-cabecera .portada-etiqueta { color: var(--rojo-hover); }
+.portada-seccion-cabecera h2 { margin: 0; font-size: clamp(28px, 3vw, 42px); line-height: 1.15; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.portada-seccion-cabecera p:last-child { margin: 14px 0 0; color: #536577; line-height: 1.65; font-size: 16px; }
 .portada-categorias__rejilla { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 28px); }
 .categoria-destacada {
     position: relative;
@@ -67,10 +67,6 @@
 .portada-vacio > div { flex: 1 1 360px; min-width: 0; }
 .portada-vacio h3 { margin: 0 0 12px; font-size: clamp(22px, 2vw, 28px); line-height: 1.25; overflow-wrap: anywhere; }
 .portada-vacio p { max-width: 65ch; margin: 0; color: #536577; line-height: 1.65; }
-.portada-ayuda { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 28px 48px; margin-bottom: clamp(40px, 5vw, 80px); padding: clamp(24px, 4vw, 56px); border-top: 3px solid var(--rojo); background: #e7eef4; }
-.portada-ayuda > div { min-width: 0; }
-.portada-ayuda > div:first-child { flex: 1 1 460px; }
-.portada-ayuda .portada-acciones { flex: 0 1 360px; }
 @media (max-width: 1050px) {
     .portada-principal__interior { grid-template-columns: minmax(0, 1fr); }
     .portada-principal h1 { max-width: 22ch; font-size: clamp(34px, 6vw, 54px); }
@@ -81,7 +77,6 @@
     .portada-categorias__rejilla { grid-template-columns: minmax(0, 1fr); }
     .categoria-destacada { min-height: 250px; }
     .portada-local figcaption { padding-inline: 16px; }
-    .portada-vacio .boton { max-width: 100%; flex-wrap: wrap; justify-content: flex-start; gap: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .categoria-destacada .categoria-destacada__visual { transform: none !important; }
