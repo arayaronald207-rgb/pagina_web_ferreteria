@@ -7,18 +7,20 @@ require_once dirname(__DIR__) . '/config/conexion.php';
 $pagina_actual = 'inicio';
 $termino_busqueda = '';
 $categorias_portada = [];
+$categorias_navegacion = [];
 $error_categorias_portada = false;
 
 try {
     // Solo nombres registrados: no se publican conteos ni datos de inventario.
-    $consulta = obtener_conexion()->prepare('SELECT nombre FROM categorias ORDER BY nombre ASC LIMIT :limite');
-    $consulta->bindValue(':limite', 6, PDO::PARAM_INT);
+    $consulta = obtener_conexion()->prepare('SELECT nombre FROM categorias ORDER BY nombre ASC');
     $consulta->execute();
-    $categorias_portada = $consulta->fetchAll();
+    $categorias_navegacion = $consulta->fetchAll();
+    $categorias_portada = array_slice($categorias_navegacion, 0, 6);
 } catch (Throwable $error) {
     error_log('No se pudieron cargar las categorías de la portada. Código: ' . $error->getCode());
     $error_categorias_portada = true;
 }
+$error_categorias_navegacion = $error_categorias_portada;
 
 function escapar_portada(string $valor): string
 {
@@ -32,6 +34,7 @@ function escapar_portada(string $valor): string
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Ferretería El Cruce en Mollejones de Platanares, Pérez Zeledón. Explora nuestro catálogo y consulta por WhatsApp sobre herramientas y materiales para tu proyecto.">
     <title>FERRETERÍA EL CRUCE</title>
+    <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/estilos.css">
     <link rel="stylesheet" href="assets/css/portada.css">
     <script src="assets/js/navegacion.js" defer></script>

@@ -27,3 +27,44 @@ tmp/
 # Installed dependencies
 /vendor/
 /node_modules/
+
+# Fotografías cargadas por el personal (almacenamiento privado).
+/almacenamiento/productos/
+/almacenamiento/importaciones/
+
+# Informes internos de pruebas (conservar los README de documentación).
+/pruebas/**/*.md
+!/pruebas/**/README.md
+
+# Archivos Excel privados de inventario, incluidos nombres con extensión en mayúsculas.
+*.[xX][lL][sS]
+*.[xX][lL][sS][xX]
+*.[xX][lL][sS][mM]
+*.[xX][lL][sS][bB]
+
+# Carpetas reservadas para respaldos privados de la base de datos.
+/respaldos/
+/backups/
+/base_datos/respaldos/
+/base_datos/backups/
+/almacenamiento/respaldos/
+/almacenamiento/backups/
+
+# Exportaciones de esta base y nombres habituales de respaldo.
+ferreteria_el_cruce*.sql*
+ferreteria_el_cruce*.dump
+ferreteria_el_cruce*.bak
+backup_*.sql
+*_backup.sql
+respaldo_*.sql
+*_respaldo.sql
+*.sql.gz
+*.sql.bz2
+*.sql.xz
+*.sql.zip
+*.sql.7z
+*.sql.bak
+
+# Las migraciones SQL y el README principal siguen formando parte del proyecto.
+!/base_datos/migraciones/**/*.sql
+!/README.md

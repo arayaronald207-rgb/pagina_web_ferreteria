@@ -29,93 +29,16 @@
     line-height: 1.6;
 }
 
-.catalogo__panel-filtros {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    align-items: end;
-    gap: 14px;
-    padding: var(--espacio-3);
-    border: 1px solid var(--linea);
-    border-radius: var(--radio-control);
-    background: var(--blanco);
-    box-shadow: 0 8px 22px #1536570b;
-}
-
-.catalogo__busqueda-activa {
-    grid-column: 1 / -1;
-    margin: 0;
-    color: #536577;
-    font-size: 14px;
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-}
-
-.catalogo__busqueda-activa strong {
-    color: var(--azul-profundo);
-}
-
-.catalogo__campo {
-    display: grid;
-    min-width: 0;
-    gap: 7px;
-}
-
-.catalogo__campo label {
-    color: var(--azul);
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.catalogo__campo select {
-    width: 100%;
-    min-width: 0;
-    min-height: var(--alto-control);
-    padding: 0 12px;
-    border: 1px solid #cbd5de;
-    border-radius: var(--radio-control);
-    background: #fbfcfd;
-    color: var(--azul-profundo);
-    font-size: 16px;
-}
-
-.catalogo__boton,
-.catalogo__limpiar {
-    display: inline-flex;
-    min-height: var(--alto-control);
-    align-items: center;
-    justify-content: center;
-    padding: 0 16px;
-    border: 1px solid transparent;
-    border-radius: var(--radio-control);
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-    transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
-}
-
-.catalogo__boton {
-    background: var(--rojo);
-    color: var(--blanco);
-    cursor: pointer;
-}
-
-.catalogo__boton:hover {
-    background: #bd1118;
-}
-
-.catalogo__limpiar {
-    border-color: #cbd5de;
-    background: var(--blanco);
-    color: var(--azul);
-}
-
-.catalogo__limpiar:hover {
-    border-color: var(--azul);
-    background: #f3f6f8;
-}
+/* Resumen compacto: los filtros siguen llegando por URL. */
+.catalogo__filtros-activos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-bottom: 12px; border-bottom: 1px solid var(--linea); font-size: 13px; color: var(--gris); }
+.catalogo__filtros-activos p { display: flex; flex-wrap: wrap; gap: 8px 20px; min-width: 0; margin: 0; }
+.catalogo__filtros-activos p span { overflow-wrap: anywhere; min-width: 0; }
+.catalogo__filtros-activos strong { color: var(--azul-profundo); }
+.catalogo__limpiar { display: inline-flex; flex-shrink: 0; align-items: center; gap: 8px; min-height: 44px; color: var(--azul); text-decoration: underline; text-underline-offset: 3px; }
+.catalogo__limpiar:hover { color: var(--rojo-hover); }
 
 .catalogo__resultados {
-    padding-top: 30px;
+    padding-top: 16px;
 }
 
 .catalogo__estado {
@@ -171,11 +94,9 @@
     max-width: 64ch;
 }
 
-.catalogo__rejilla {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: clamp(20px, 2vw, 24px);
-}
+.catalogo__rejilla { --bs-gutter-x: 1.5rem; --bs-gutter-y: 1.5rem; }
+.catalogo__paginacion { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 28px; font-size: 14px; color: var(--azul); }
+.catalogo__paginacion a { display: inline-flex; align-items: center; min-height: 44px; --bs-btn-color: var(--azul); --bs-btn-border-color: var(--azul); --bs-btn-hover-bg: var(--azul); --bs-btn-hover-border-color: var(--azul); }
 
 .producto {
     display: flex;
@@ -242,6 +163,10 @@
     overflow-wrap: anywhere;
 }
 
+.producto__contenido h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.producto__detalles { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; margin-bottom: 12px; color: var(--azul); font-weight: 700; font-size: 13px; }
+.producto__detalles:hover { color: var(--rojo); }
+
 .producto__descripcion {
     margin: 11px 0 18px;
     color: #536577;
@@ -277,13 +202,7 @@
         padding-top: 38px;
     }
 
-    .catalogo__panel-filtros {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 
-    .catalogo__campo {
-        grid-column: 1 / -1;
-    }
 }
 
 @media (max-width: 520px) {
@@ -299,22 +218,13 @@
         font-size: clamp(26px, 7vw, 32px);
     }
 
-    .catalogo__panel-filtros {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 12px;
-        padding: 14px;
-    }
 
-    .catalogo__boton,
-    .catalogo__limpiar {
-        width: 100%;
-    }
 
-    .catalogo__rejilla {
-        grid-template-columns: minmax(0, 1fr);
-    }
 
     .producto__contenido {
         min-height: 0;
     }
 }
+
+/* Conserva la tipografía pública al cargar Bootstrap en el catálogo. */
+.sitio-publico { line-height: normal; }

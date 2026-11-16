@@ -93,69 +93,76 @@ require __DIR__ . '/../app/Vistas/plantillas/cabecera_administrativa.php';
     <p>Organiza los productos para que tus clientes encuentren lo que necesitan.</p>
 </div>
 <?php if (is_string($mensaje) && $mensaje !== ''): ?>
-    <p class="panel-aviso" role="status"><?= escapar_panel($mensaje) ?></p>
+    <p class="alert alert-success panel-aviso" role="status"><?= escapar_panel($mensaje) ?></p>
 <?php endif; ?>
 <?php if ($error_formulario !== ''): ?>
-    <p class="panel-aviso panel-aviso--error" role="alert"><?= escapar_panel($error_formulario) ?></p>
+    <p class="alert alert-danger panel-aviso panel-aviso--error" role="alert"><?= escapar_panel($error_formulario) ?></p>
 <?php endif; ?>
 <?php if ($confirmar !== null): ?>
-    <section class="panel-tarjeta panel-confirmacion" aria-labelledby="confirmar-titulo">
+    <section class="card panel-tarjeta panel-confirmacion" aria-labelledby="confirmar-titulo">
         <h2 id="confirmar-titulo">¿Eliminar esta categoría?</h2>
         <p>Vas a eliminar <strong><?= escapar_panel($confirmar['nombre']) ?></strong>. Esta acción no se puede deshacer.</p>
         <form class="panel-acciones" action="categorias.php" method="post">
             <input type="hidden" name="token_csrf" value="<?= escapar_panel(obtener_token_csrf()) ?>">
             <input type="hidden" name="accion" value="eliminar">
             <input type="hidden" name="id_categoria" value="<?= escapar_panel($confirmar['id_categoria']) ?>">
-            <button class="panel-boton panel-boton--peligro" type="submit">Sí, eliminar categoría</button>
-            <a class="panel-boton panel-boton--secundario" href="categorias.php">Cancelar</a>
+            <button class="btn btn-danger panel-boton panel-boton--peligro" type="submit">Sí, eliminar categoría</button>
+            <a class="btn btn-outline-primary panel-boton panel-boton--secundario" href="categorias.php">Cancelar</a>
         </form>
     </section>
 <?php endif; ?>
-<div class="panel-categorias">
-    <section class="panel-tarjeta panel-formulario" aria-labelledby="formulario-titulo">
+<div class="row g-4 panel-categorias">
+    <div class="col-12 col-xl-5"><section class="card panel-tarjeta panel-formulario" aria-labelledby="formulario-titulo">
         <h2 id="formulario-titulo"><?= $id_edicion === null ? 'Nueva categoría' : 'Editar categoría' ?></h2>
         <form action="categorias.php" method="post">
             <input type="hidden" name="token_csrf" value="<?= escapar_panel(obtener_token_csrf()) ?>">
             <input type="hidden" name="accion" value="<?= $id_edicion === null ? 'crear' : 'editar' ?>">
             <?php if ($id_edicion !== null): ?><input type="hidden" name="id_categoria" value="<?= escapar_panel($id_edicion) ?>"><?php endif; ?>
-            <label for="nombre_categoria">Nombre de la categoría</label>
-            <input id="nombre_categoria" name="nombre" type="text" maxlength="100" required value="<?= escapar_panel($nombre_formulario) ?>" aria-describedby="nombre-ayuda">
-            <p id="nombre-ayuda" class="panel-ayuda">Hasta 100 caracteres. El nombre debe ser único.</p>
+            <label class="form-label" for="nombre_categoria">Nombre de la categoría</label>
+            <input class="form-control" id="nombre_categoria" name="nombre" type="text" maxlength="100" required value="<?= escapar_panel($nombre_formulario) ?>" aria-describedby="nombre-ayuda">
+            <p id="nombre-ayuda" class="form-text panel-ayuda">Hasta 100 caracteres. El nombre debe ser único.</p>
             <div class="panel-acciones">
-                <button class="panel-boton" type="submit"<?= $categorias === null ? ' disabled' : '' ?>><?= $id_edicion === null ? 'Crear categoría' : 'Guardar cambios' ?></button>
-                <?php if ($id_edicion !== null): ?><a href="categorias.php" class="panel-boton panel-boton--secundario">Cancelar</a><?php endif; ?>
+                <button class="btn btn-primary panel-boton" type="submit"<?= $categorias === null ? ' disabled' : '' ?>><?= $id_edicion === null ? 'Crear categoría' : 'Guardar cambios' ?></button>
+                <?php if ($id_edicion !== null): ?><a href="categorias.php" class="btn btn-outline-primary panel-boton panel-boton--secundario">Cancelar</a><?php endif; ?>
             </div>
         </form>
-    </section>
-    <section class="panel-tarjeta" aria-labelledby="listado-titulo">
+    </section></div>
+    <div class="col-12 col-xl-7"><section class="card panel-tarjeta" aria-labelledby="listado-titulo">
         <h2 id="listado-titulo">Categorías registradas</h2>
-        <p class="panel-ayuda">Solo se pueden eliminar categorías sin productos asociados.</p>
+        <p class="form-text panel-ayuda">Solo se pueden eliminar categorías sin productos asociados.</p>
         <?php if ($categorias === null): ?>
             <p>El listado no está disponible.</p>
         <?php elseif ($categorias === []): ?>
             <div class="panel-vacio"><strong>Aún no hay categorías</strong><p>Crea la primera para comenzar a organizar el catálogo.</p></div>
         <?php else: ?>
-            <ul class="panel-listado">
+            <div class="table-responsive" role="region" aria-labelledby="listado-titulo" tabindex="0">
+            <table class="table table-hover align-middle panel-tabla">
+                <caption class="visually-hidden">Categorías, productos asociados y acciones disponibles</caption>
+                <thead><tr><th scope="col">Categoría</th><th scope="col">Productos</th><th scope="col">Acciones</th></tr></thead>
+                <tbody>
                 <?php foreach ($categorias as $categoria): ?>
-                    <li>
-                        <div><h3><?= escapar_panel($categoria['nombre']) ?></h3><p><?= escapar_panel($categoria['productos']) ?> productos asociados</p></div>
+                    <tr>
+                        <th scope="row"><?= escapar_panel($categoria['nombre']) ?></th>
+                        <td><?= escapar_panel($categoria['productos']) ?></td>
+                        <td>
                         <div class="panel-acciones">
-                            <a class="panel-boton panel-boton--secundario" href="categorias.php?editar=<?= escapar_panel($categoria['id_categoria']) ?>" aria-label="Editar <?= escapar_panel($categoria['nombre']) ?>">Editar</a>
+                            <a class="btn btn-outline-primary panel-boton panel-boton--secundario" href="categorias.php?editar=<?= escapar_panel($categoria['id_categoria']) ?>" aria-label="Editar <?= escapar_panel($categoria['nombre']) ?>">Editar</a>
                             <?php if ((int) $categoria['productos'] === 0): ?>
                                 <form action="categorias.php" method="post">
                                     <input type="hidden" name="token_csrf" value="<?= escapar_panel(obtener_token_csrf()) ?>">
                                     <input type="hidden" name="accion" value="confirmar_eliminacion">
                                     <input type="hidden" name="id_categoria" value="<?= escapar_panel($categoria['id_categoria']) ?>">
-                                    <button class="panel-boton panel-boton--eliminar" type="submit" aria-label="Eliminar <?= escapar_panel($categoria['nombre']) ?>">Eliminar</button>
+                                    <button class="btn btn-outline-danger panel-boton panel-boton--eliminar" type="submit" aria-label="Eliminar <?= escapar_panel($categoria['nombre']) ?>">Eliminar</button>
                                 </form>
                             <?php else: ?>
                                 <span class="panel-conservada">Con productos</span>
                             <?php endif; ?>
-                        </div>
-                    </li>
+                        </div></td>
+                    </tr>
                 <?php endforeach; ?>
-            </ul>
+            </tbody>
+            </table></div>
         <?php endif; ?>
-    </section>
+    </section></div>
 </div>
 <?php require __DIR__ . '/../app/Vistas/plantillas/pie_administrativo.php'; ?>

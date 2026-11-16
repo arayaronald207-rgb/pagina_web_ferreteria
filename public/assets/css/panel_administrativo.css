@@ -23,7 +23,7 @@
 .panel-titulo { margin-bottom: 28px; }
 .panel-titulo h1 { margin: 0; font-size: clamp(28px, 3vw, 38px); line-height: 1.15; overflow-wrap: anywhere; }
 .panel-titulo > p:last-child { margin: 12px 0 0; color: var(--gris); line-height: 1.6; }
-.panel-indicadores { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 24px; }
+.panel-indicadores { margin-bottom: 24px; }
 .panel-indicador { display: flex; flex-direction: column; gap: 12px; padding: 24px; border: 1px solid var(--linea); border-top: 3px solid var(--azul); border-radius: 5px; background: var(--blanco); }
 .panel-indicador--atencion { border-top-color: var(--rojo); }
 .panel-indicador p { margin: 0; font-size: 14px; font-weight: 650; }
@@ -33,15 +33,6 @@
 .panel-tarjeta { min-width: 0; margin-bottom: 24px; padding: clamp(20px, 2.5vw, 32px); border: 1px solid var(--linea); border-radius: 5px; background: var(--blanco); }
 .panel-tarjeta h2 { margin: 0 0 16px; font-size: 20px; overflow-wrap: anywhere; }
 .panel-tarjeta > p { color: var(--gris); line-height: 1.6; max-width: 75ch; }
-.panel-boton { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; max-width: 100%; padding: 10px 16px; border: 1px solid var(--azul); border-radius: 3px; background: var(--azul); color: var(--blanco); font-size: 13px; font-weight: 650; cursor: pointer; text-align: center; line-height: 1.4; overflow-wrap: anywhere; }
-.panel-boton:hover { background: var(--azul-profundo); }
-.panel-boton--secundario { border-color: var(--linea); background: var(--blanco); color: var(--azul); }
-.panel-boton--secundario:hover { background: var(--fondo); }
-.panel-boton--peligro { background: var(--rojo); border-color: var(--rojo); }
-.panel-boton--peligro:hover { background: #b91017; }
-.panel-boton--eliminar { border-color: #ecc3c5; color: #a51218; background: var(--blanco); }
-.panel-boton--eliminar:hover { background: #fff1f1; }
-.panel-boton:disabled { opacity: .6; cursor: not-allowed; }
 .panel-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .panel-proximamente ul { list-style: none; margin: 0; padding: 0; }
 .panel-proximamente li { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 16px 0; border-top: 1px solid var(--linea); font-size: 14px; }
@@ -50,22 +41,16 @@
 .panel-aviso--error { border-color: #edc1c3; border-left-color: var(--rojo); background: #fff5f5; color: #8b1419; }
 .panel-confirmacion { border-left: 4px solid var(--rojo); }
 .panel-confirmacion strong { overflow-wrap: anywhere; }
-.panel-categorias { display: grid; grid-template-columns: minmax(240px, .75fr) minmax(0, 1.25fr); gap: 24px; align-items: start; }
+.panel-categorias { align-items: start; }
 .panel-formulario label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 650; }
 .panel-formulario input[type="text"] { display: block; width: 100%; min-width: 0; height: 46px; padding: 10px 12px; border: 1px solid #b9c6d2; border-radius: 3px; color: var(--azul-profundo); background: #fbfcfd; }
 .panel-ayuda { color: var(--gris); font-size: 12px; line-height: 1.6; }
-.panel-listado { padding: 0; margin: 20px 0 0; list-style: none; }
-.panel-listado li { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; padding: 20px 0; border-top: 1px solid var(--linea); }
-.panel-listado li > div:first-child { min-width: 0; flex: 1 1 160px; }
-.panel-listado h3 { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
-.panel-listado p { margin: 6px 0 0; font-size: 12px; color: var(--gris); }
 .panel-conservada { color: var(--gris); font-size: 12px; }
 .panel-vacio { padding: 28px 0 10px; border-top: 1px solid var(--linea); }
 .panel-vacio p { color: var(--gris); font-size: 14px; line-height: 1.6; }
 .panel-pie { padding-bottom: 24px; color: var(--gris); font-size: 12px; }
 @media (max-width: 1100px) {
     .panel-estructura { grid-template-columns: 200px minmax(0, 1fr); }
-    .panel-categorias { grid-template-columns: minmax(0, 1fr); gap: 0; }
     .panel-indicador { padding: 18px; }
 }
 @media (max-width: 800px) {
@@ -77,10 +62,28 @@
     .panel-cuenta { width: 100%; justify-content: space-between; }
 }
 @media (max-width: 540px) {
-    .panel-indicadores { grid-template-columns: minmax(0, 1fr); }
     .panel-proximamente li { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
     .panel-proximamente li > span { grid-column: 1 / -1; grid-row: 2; }
     .panel-navegacion { grid-template-columns: minmax(0, 1fr); }
     .panel-marca { font-size: 12px; gap: 12px; }
     .panel-cuenta { flex-wrap: wrap; gap: 12px; }
 }
+
+/* Bootstrap controla los componentes; se conservan los colores del negocio. */
+.panel-cuerpo { line-height: normal; }
+.panel-boton { min-height: 44px; font-size: 13px; font-weight: 650; white-space: normal; overflow-wrap: anywhere; }
+.panel-boton.btn-primary { --bs-btn-bg: var(--azul); --bs-btn-border-color: var(--azul); --bs-btn-hover-bg: var(--azul-profundo); --bs-btn-hover-border-color: var(--azul-profundo); --bs-btn-active-bg: var(--azul-profundo); --bs-btn-active-border-color: var(--azul-profundo); }
+.panel-boton.btn-outline-primary { --bs-btn-color: var(--azul); --bs-btn-border-color: var(--linea); --bs-btn-hover-bg: var(--azul); --bs-btn-hover-border-color: var(--azul); }
+.panel-boton.btn-danger { --bs-btn-bg: var(--rojo); --bs-btn-border-color: var(--rojo); }
+.panel-tarjeta > .panel-boton { align-self: flex-start; }
+.panel-tabla { --bs-table-color: var(--azul-profundo); --bs-table-border-color: var(--linea); font-size: 14px; }
+.panel-tabla th[scope="row"] { min-width: 10rem; max-width: 20rem; overflow-wrap: anywhere; }
+.panel-tabla td:last-child { min-width: 11rem; }
+.panel-tabla .panel-acciones { min-width: 10rem; }
+.panel-formulario .form-control:focus { border-color: var(--azul); box-shadow: 0 0 0 .25rem #15365726; }
+.panel-producto-miniatura { display: block; width: 64px; height: 64px; object-fit: contain; background: var(--fondo); border-radius: 4px; }
+.panel-producto-preview { display: block; width: 160px; max-width: 100%; height: 120px; object-fit: contain; background: var(--fondo); border: 1px solid var(--linea); border-radius: 4px; }
+.panel-productos-tabla { min-width: 760px; }
+.panel-productos-tabla td { max-width: 18rem; overflow-wrap: anywhere; }
+.panel-productos-tabla .panel-acciones { min-width: 12rem; }
+.panel-producto-formulario .form-control, .panel-producto-formulario .form-select { min-width: 0; }

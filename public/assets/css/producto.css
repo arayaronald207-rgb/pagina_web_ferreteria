@@ -1,0 +1,26 @@
+.detalle { padding-block: 28px var(--separacion-secciones); color: var(--azul-profundo); }
+.detalle__volver { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 24px; font-size: 14px; text-decoration: underline; text-underline-offset: 4px; }
+.detalle__galeria { padding: clamp(12px, 2vw, 28px); background: var(--blanco); border: 1px solid var(--linea); border-radius: 5px; }
+.detalle__imagen { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain; }
+.detalle__miniaturas { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 20px; border-top: 1px solid var(--linea); }
+.detalle__miniatura { display: block; border: 2px solid var(--linea); border-radius: 4px; padding: 4px; }
+.detalle__miniatura[aria-current], .detalle__miniatura:hover { border-color: var(--rojo); }
+.detalle__miniatura img { display: block; object-fit: contain; }
+.detalle__informacion { overflow-wrap: anywhere; }
+.detalle__informacion h1 { font-size: clamp(28px, 3vw, 42px); line-height: 1.2; margin: 0 0 20px; }
+.detalle__informacion > p { line-height: 1.7; }
+.detalle__categoria { font-size: 13px; font-weight: 700; color: var(--rojo); }
+.detalle__categoria a:hover { text-decoration: underline; }
+.detalle__codigo { padding-bottom: 20px; border-bottom: 1px solid var(--linea); }
+.detalle__whatsapp { --bs-btn-color: var(--blanco); --bs-btn-bg: var(--rojo); --bs-btn-border-color: var(--rojo); --bs-btn-hover-color: var(--blanco); --bs-btn-hover-bg: var(--rojo-hover); --bs-btn-hover-border-color: var(--rojo-hover); --bs-btn-active-bg: var(--azul); --bs-btn-active-color: var(--blanco); min-height: 48px; padding: 14px 22px; font-weight: 700; white-space: normal; }
+.detalle__ayuda { margin-top: 16px; color: var(--gris); font-size: 13px; max-width: 50ch; }
+.detalle__seccion { margin-top: 32px; padding: clamp(20px, 3vw, 32px); border: 1px solid var(--linea); border-top: 3px solid var(--azul); border-radius: 4px; background: var(--blanco); overflow-wrap: anywhere; }
+.detalle__seccion h2 { font-size: 24px; margin-bottom: 20px; }
+.detalle__descripcion { color: var(--gris); line-height: 1.8; white-space: pre-wrap; }
+.detalle__especificaciones { margin: 0; }
+.detalle__especificaciones > div { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(0, 3fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--linea); line-height: 1.6; }
+.detalle__especificaciones dd { margin: 0; }
+@media (max-width: 575px) {
+    .detalle__whatsapp { display: block; width: 100%; }
+    .detalle__especificaciones > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}

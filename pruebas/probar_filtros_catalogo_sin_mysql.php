@@ -8,6 +8,8 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 // en memoria. No se carga .env ni la conexión real de MySQL.
 $casos = [
     'completo' => [[], ['Brocha', 'Martillo de goma', 'Martillo de prueba']],
+    'codigo_parcial' => [['buscar' => 'OD-2'], ['Martillo de goma']],
+    'descripcion' => [['buscar' => 'fictici'], ['Brocha', 'Martillo de goma', 'Martillo de prueba']],
     'buscar' => [['buscar' => 'Martillo'], ['Martillo de goma', 'Martillo de prueba']],
     'categoria' => [['categoria' => 'Herramientas'], ['Martillo de prueba']],
     'combinados' => [['buscar' => 'Martillo', 'categoria' => 'Herramientas'], ['Martillo de prueba']],
@@ -49,7 +51,7 @@ if (!isset($casos[$caso])) { throw new InvalidArgumentException('Caso desconocid
 [$entrada, $esperados] = $casos[$caso];
 $raiz = sys_get_temp_dir() . '/el-cruce-filtros-' . bin2hex(random_bytes(6));
 $archivos = [];
-$directorios = [$raiz, "$raiz/config", "$raiz/public", "$raiz/app", "$raiz/app/Vistas", "$raiz/app/Vistas/plantillas"];
+$directorios = [$raiz, "$raiz/config", "$raiz/public", "$raiz/app", "$raiz/app/Servicios", "$raiz/app/Vistas", "$raiz/app/Vistas/plantillas"];
 
 function comprobar_filtro(bool $condicion, string $mensaje): void
 {
@@ -58,7 +60,7 @@ function comprobar_filtro(bool $condicion, string $mensaje): void
 
 try {
     foreach ($directorios as $directorio) { mkdir($directorio); }
-    foreach (['public/catalogo.php', 'app/Vistas/plantillas/cabecera_publica.php', 'app/Vistas/plantillas/pie_publico.php'] as $archivo) {
+    foreach (['public/catalogo.php', 'app/Servicios/imagenes_productos.php', 'app/Servicios/detalles_productos.php', 'app/Servicios/catalogo.php', 'app/Servicios/categorias.php', 'app/Vistas/plantillas/cabecera_publica.php', 'app/Vistas/plantillas/pie_publico.php'] as $archivo) {
         $destino = "$raiz/$archivo";
         $archivos[] = $destino;
         if (!copy(dirname(__DIR__) . '/' . $archivo, $destino)) { throw new RuntimeException('Falló la copia aislada.'); }
@@ -72,16 +74,16 @@ try {
     ]);
     $pdo = $GLOBALS['conexion_prueba'];
     $pdo->exec('CREATE TABLE categorias (id_categoria INTEGER PRIMARY KEY, nombre TEXT)');
-    $pdo->exec('CREATE TABLE productos (id_producto INTEGER PRIMARY KEY, id_categoria INTEGER, nombre TEXT, descripcion TEXT, imagen TEXT, visible INTEGER)');
+    $pdo->exec('CREATE TABLE productos (id_producto INTEGER PRIMARY KEY, id_categoria INTEGER, nombre TEXT, descripcion TEXT, imagen TEXT, visible INTEGER, codigo TEXT)');
     if ($caso !== 'vacio') {
         $pdo->exec("INSERT INTO categorias VALUES (1, 'Herramientas'), (2, 'Acabados'), (3, 'Solo ocultos'), (4, 'Sin productos')");
         $insertar = $pdo->prepare('INSERT INTO categorias VALUES (5, :nombre)');
         $insertar->execute(['nombre' => 'Pinturas & decoración "hogar" <prueba>']);
         $pdo->exec("INSERT INTO productos VALUES
-            (1, 1, 'Martillo de prueba', 'Dato ficticio', NULL, 1),
-            (2, 2, 'Martillo de goma', 'Dato ficticio', NULL, 1),
-            (3, 2, 'Brocha', 'Dato ficticio', NULL, 1),
-            (4, 3, 'Oculto', 'No debe publicarse', NULL, 0)");
+            (1, 1, 'Martillo de prueba', 'Dato ficticio', NULL, 1, 'COD-1'),
+            (2, 2, 'Martillo de goma', 'Dato ficticio', NULL, 1, 'COD-2'),
+            (3, 2, 'Brocha', 'Dato ficticio', NULL, 1, 'COD-3'),
+            (4, 3, 'Oculto', 'No debe publicarse', NULL, 0, 'COD-4')");
     }
     if ($caso === 'error') {
         // Fallo inducido únicamente en SQLite; el detalle nunca debe aparecer en HTML.
@@ -103,19 +105,24 @@ try {
     comprobar_filtro($nombres === $esperados, "$caso: resultados incorrectos");
     comprobar_filtro($xpath->query('//input[@type="search"]')->length === 1, 'Debe existir un solo buscador visible');
     $buscar = is_string($entrada['buscar'] ?? '') ? trim($entrada['buscar'] ?? '') : '';
-    $oculto = $xpath->query('//form[@id="filtros"]/input[@name="buscar" and @type="hidden"]')->item(0);
-    comprobar_filtro($oculto instanceof DOMElement && $oculto->getAttribute('value') === $buscar, 'Se perdió la búsqueda al filtrar');
+    comprobar_filtro($xpath->query('//main//form | //select[@name="categoria"]')->length === 0, 'El formulario grande sigue visible');
     comprobar_filtro($xpath->query('//input[@id="busqueda_cabecera"]')->item(0)->getAttribute('value') === $buscar, 'El encabezado perdió la búsqueda');
     $categoria = is_string($entrada['categoria'] ?? '') ? trim($entrada['categoria'] ?? '') : '';
-    if ($categoria !== '' && $caso !== 'inyeccion') {
-        $opcion = $xpath->query('//select[@name="categoria"]/option[@selected]')->item(0);
-        comprobar_filtro($opcion instanceof DOMElement && $opcion->getAttribute('value') === $categoria, 'Se perdió la categoría seleccionada');
+    $resumen = $xpath->query('//div[@id="filtros"]')->item(0);
+    comprobar_filtro(($resumen !== null) === ($buscar !== '' || $categoria !== ''), 'Resumen de filtros incorrecto');
+    if ($resumen !== null) {
+        comprobar_filtro(str_contains($resumen->textContent, $buscar) && str_contains($resumen->textContent, $categoria), 'El resumen perdió filtros');
+        comprobar_filtro($xpath->query('//a[@class="catalogo__limpiar"]')->item(0)->getAttribute('href') === 'catalogo.php', 'Quitar filtros debe limpiar los parámetros');
     }
     $categoria_buscador = $xpath->query('//form[@role="search"]/input[@name="categoria"]')->item(0);
     comprobar_filtro($categoria === '' ? $categoria_buscador === null : $categoria_buscador instanceof DOMElement && $categoria_buscador->getAttribute('value') === $categoria, 'El buscador debe conservar la categoría activa');
-    comprobar_filtro($xpath->query('//a[@class="catalogo__limpiar"]')->item(0)->getAttribute('href') === 'catalogo.php', 'Limpiar debe quitar todos los parámetros');
     if ($caso !== 'vacio' && $caso !== 'error') {
-        comprobar_filtro($xpath->query('//select[@name="categoria"]/option')->length === 6, 'Deben ofrecerse todas las categorías, incluso las vacías');
+        $enlaces_menu = $xpath->query('//ul[@class="megamenu__lista"]//a');
+        comprobar_filtro($enlaces_menu->length === 5, 'Deben ofrecerse todas las categorías, incluso las vacías');
+        foreach ($enlaces_menu as $enlace) {
+            parse_str(parse_url($enlace->getAttribute('href'), PHP_URL_QUERY), $parametros);
+            comprobar_filtro(($parametros['buscar'] ?? '') === $buscar && $parametros['categoria'] === $enlace->textContent, 'El enlace perdió búsqueda o categoría');
+        }
     }
     comprobar_filtro(!str_contains($html, 'No debe publicarse'), 'Se publicó un producto oculto');
     comprobar_filtro(!str_contains($html, '<prueba>'), 'Falta escape en el nombre de categoría');

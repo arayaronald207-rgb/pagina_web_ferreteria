@@ -2,102 +2,104 @@
 
 ## Descripción del proyecto
 
-El Cruce Digital es un sistema web desarrollado para **Ferretería El Cruce**, ubicada en Mollejones de Platanares, Pérez Zeledón, Costa Rica.
+El Cruce Digital es un proyecto web desarrollado para **Ferretería El Cruce**, ubicada en Mollejones de Platanares, Pérez Zeledón, Costa Rica.
 
-El objetivo del proyecto es ofrecer un catálogo digital donde los clientes puedan consultar los productos de la ferretería y, posteriormente, solicitar cotizaciones.
+Su objetivo es crear un catálogo digital donde los clientes puedan consultar los productos de la ferretería y solicitar cotizaciones sin necesidad de visitar el establecimiento.
 
-El sistema también contempla un panel administrativo para gestionar la información del catálogo.
+El sistema también contará con un panel administrativo para gestionar los productos, las categorías y las solicitudes de los clientes.
 
-Este proyecto se desarrolla como parte del curso de **Programación Avanzada** y está basado en una necesidad real del negocio.
+Este proyecto forma parte del curso de **Programación Avanzada** y busca ofrecer una solución a una necesidad real del negocio.
 
 ## Tecnologías utilizadas
 
-- HTML5
-- CSS3
-- JavaScript
-- PHP
-- MySQL
-- Apache (XAMPP)
-- Git y GitHub
+- **HTML5:** estructura de las páginas.
+- **CSS3:** diseño y estilos personalizados.
+- **Bootstrap 5.3.9:** componentes visuales y diseño responsive.
+- **JavaScript:** navegación e interactividad.
+- **PHP:** lógica del sistema y procesamiento de información.
+- **MySQL:** almacenamiento de datos.
+- **XAMPP:** servidor local con Apache y MySQL.
+- **Git y GitHub:** control de versiones.
 
-## Funcionalidades desarrolladas hasta el momento
+## Funcionalidades desarrolladas
 
-- Página principal con información e imágenes del negocio.
-- Diseño adaptable a computadoras y dispositivos móviles.
-- Navegación mediante menú responsive.
-- Catálogo conectado a la base de datos.
-- Búsqueda de productos y filtros por categoría.
+Hasta el momento, el proyecto cuenta con:
+
+- Página principal con información e imágenes reales de la ferretería.
+- Diseño adaptable a computadoras, tabletas y teléfonos.
+- Encabezado fijo al desplazarse, con logotipo y buscador.
+- Menú desplegable de categorías conectado a MySQL.
+- Catálogo de productos con búsqueda y filtros por categoría.
+- Página individual de productos publicados, con fotografía, código, descripción
+  completa y consulta por WhatsApp. Búsqueda parcial por nombre, código o descripción.
 - Inicio y cierre de sesión administrativo.
-- Panel administrativo con información general.
+- Panel administrativo con estadísticas generales.
 - Gestión de categorías.
-- Validaciones de formularios y protección de sesiones.
-- Integración de WhatsApp y Google Maps.
+- Administración de productos: registro, edición, eliminación con confirmación,
+  publicación, fotografías, búsqueda por nombre, código o descripción, filtros y paginación.
+- Validaciones de formularios y medidas de seguridad.
+- Integración con WhatsApp y Google Maps.
 
-**Nota:** El catálogo todavía no contiene productos reales, ya que está pendiente la importación de los registros del sistema interno de la ferretería.
+Se utiliza **Bootstrap 5** junto con CSS personalizado para organizar las tarjetas, formularios, tablas y columnas del sistema, manteniendo los colores e identidad de la ferretería.
+
+**Nota:** La carga completa de productos del sistema interno de la ferretería sigue pendiente.
 
 ## Funcionalidades pendientes
 
-- Importación y clasificación de productos desde Excel.
-- Administración completa de productos e imágenes.
-- Lista de productos para solicitar cotizaciones.
-- Registro y gestión de solicitudes de cotización.
-- Administración completa de usuarios.
-- Pruebas finales y preparación para su publicación.
+- Importar y clasificar los productos desde Excel.
+- Autorizar y aplicar la migración 003 para habilitar especificaciones técnicas
+  y fotografías adicionales; el código está preparado y probado con datos temporales.
+- Implementar la lista de productos para cotización.
+- Registrar y administrar solicitudes de cotización.
+- Completar la administración de usuarios.
+- Realizar las pruebas finales y preparar la publicación del sitio web.
 
-## Requisitos para ejecutar el proyecto
+## Requisitos
 
 Para ejecutar el proyecto localmente se necesita:
 
-- XAMPP con Apache, PHP y MySQL.
+- XAMPP con PHP, Apache y MySQL.
 - Un navegador web.
-- El código fuente descargado desde GitHub.
+- El código fuente del proyecto.
 
-## Instrucciones de instalación
+## Instalación
 
 ### 1. Descargar el proyecto
 
-Descargar el repositorio desde GitHub utilizando la opción **Code → Download ZIP**, o clonarlo mediante Git.
+Descargar el repositorio desde GitHub mediante **Code → Download ZIP** o clonarlo con Git.
 
-Extraer la carpeta y colocarla dentro de:
+Colocar la carpeta del proyecto en el directorio `htdocs` de XAMPP.
+
+Por ejemplo:
 
 `C:\xampp\htdocs\pagina_web_ferreteria`
 
-Si se utiliza otra instalación de XAMPP, se debe colocar en la carpeta `htdocs` correspondiente.
+### 2. Iniciar los servicios
 
-### 2. Iniciar XAMPP
-
-Abrir el panel de control de XAMPP e iniciar los servicios:
+Abrir XAMPP e iniciar:
 
 - Apache
 - MySQL
 
 ### 3. Crear la base de datos
 
-Abrir phpMyAdmin:
+Ingresar a:
 
 `http://localhost/phpmyadmin`
 
-Crear una base de datos con el nombre:
+Crear una base de datos llamada:
 
 `ferreteria_el_cruce`
 
-Seleccionar la base de datos y utilizar la opción **Importar** para ejecutar el archivo:
+Seleccionarla e importar el archivo:
 
 `base_datos/migraciones/001_crear_tablas.sql`
 
-Este archivo contiene la estructura inicial de las tablas.
-
 ### 4. Configurar la conexión
 
-En la carpeta principal del proyecto, copiar el archivo:
+En la carpeta principal del proyecto, crear una copia del archivo `.env.example` y renombrarla como `.env`.
 
-`.env.example`
-
-Y renombrar la copia como:
-
-`.env`
-
-Configurar los datos de conexión de acuerdo con la instalación local de MySQL.
+Configurar los datos de conexión según la instalación local.
 
 Ejemplo para XAMPP:
 
@@ -114,59 +116,83 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 5. Abrir el proyecto
+### 5. Abrir la página
 
-Ingresar desde el navegador a:
+Desde el navegador, ingresar a:
+
+**Página principal:**
 
 `http://localhost/pagina_web_ferreteria/public/`
 
-Para acceder a la página de inicio de sesión administrativo:
+**Inicio de sesión administrativo:**
 
 `http://localhost/pagina_web_ferreteria/public/iniciar_sesion.php`
 
 ### 6. Acceso administrativo
 
-Por seguridad, el repositorio público no incluye credenciales de acceso ni una base de datos con contraseñas de usuarios reales.
+El repositorio no incluye las credenciales de los usuarios reales.
 
-Para probar el panel administrativo, se debe crear una cuenta inicial en la base de datos local siguiendo las indicaciones del archivo:
+Para crear un administrador inicial en una instalación local, consultar el archivo:
 
 `pruebas/PRIMER_ADMINISTRADOR.md`
 
-## Estructura general
+### 7. Activar la administración de productos
+
+La migración `base_datos/migraciones/002_codigo_productos.sql` **ya está aplicada en
+el MySQL local del proyecto**. No volver a ejecutarla. El módulo y el catálogo
+utilizan la columna `productos.codigo` y su índice único.
+
+Solo en una instalación nueva, ejecutar 001 y luego 002 una sola vez. En la base
+existente no repetir ninguna. Acceder con una cuenta autorizada a
+`public/productos.php`; no es necesario cambiar `.env` ni las credenciales.
+
+`003_detalles_productos.sql` está preparada **sin ejecutar**: añade especificaciones
+opcionales y la tabla de fotografías adicionales. El detalle público funciona ya
+con la imagen principal y los datos actuales. Los controles de especificaciones y
+galería se habilitan automáticamente cuando exista el esquema completo de 003.
+Ver [Detalle de productos](pruebas/DETALLE_PRODUCTOS.md) para su alcance y pruebas.
+
+Los requisitos de fotografías, las pruebas con datos temporales y los detalles de
+activación se describen en [Administración de productos](pruebas/ADMINISTRACION_PRODUCTOS.md).
+
+## Estructura del proyecto
 
 ```text
 pagina_web_ferreteria/
-├── app/
-│   ├── Servicios/
-│   └── Vistas/
-├── base_datos/
-│   └── migraciones/
-├── config/
-├── pruebas/
+├── app/                 # Lógica y vistas del sistema
+├── almacenamiento/      # Fotografías privadas de productos
+├── base_datos/          # Script de creación de tablas
+├── config/              # Conexión con MySQL
+├── pruebas/             # Pruebas y documentación
 ├── public/
 │   ├── assets/
-│   │   ├── css/
-│   │   ├── imagenes/
-│   │   └── js/
-│   ├── index.php
-│   ├── catalogo.php
-│   ├── categorias.php
+│   │   ├── css/         # Estilos personalizados
+│   │   ├── imagenes/    # Imágenes del sitio
+│   │   ├── js/          # JavaScript
+│   │   └── vendor/
+│   │       └── bootstrap/ # Bootstrap 5.3.9
+│   ├── index.php        # Página principal
+│   ├── catalogo.php     # Catálogo de productos
+│   ├── producto.php     # Detalle público de un producto
+│   ├── categorias.php   # Gestión de categorías
+│   ├── productos.php    # Administración de productos
+│   ├── imagen_producto.php # Entrega controlada de fotografías
 │   ├── administracion.php
 │   └── iniciar_sesion.php
 ├── .env.example
 └── .htaccess
 ```
 
-## Estado del proyecto
+## Estado actual
 
-**En desarrollo.**
+**Proyecto en desarrollo.**
 
-Actualmente se encuentra implementada la base del sistema, incluyendo las páginas públicas, la conexión con MySQL, el inicio de sesión, el panel administrativo y la gestión de categorías.
+Actualmente se encuentra implementada la estructura principal del sistema, la conexión con MySQL, el catálogo y el detalle público, la autenticación administrativa, la gestión de categorías, la administración de productos y el diseño responsive. La migración 002 está aplicada. La ampliación de especificaciones y fotografías adicionales requiere autorizar la migración 003.
 
-Las demás funcionalidades se incorporarán durante las siguientes etapas.
+Las funcionalidades restantes se desarrollarán durante las siguientes etapas del proyecto.
 
 ## Autor
 
-Ronald Araya
+**Ronald Araya**
 
 Proyecto académico — Programación Avanzada.

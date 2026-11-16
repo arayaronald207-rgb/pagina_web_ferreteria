@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title><?= escapar_panel($titulo_pagina) ?> | FERRETERÍA EL CRUCE</title>
+    <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/estilos.css">
     <link rel="stylesheet" href="assets/css/panel_administrativo.css">
+    <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
 </head>
 <body class="panel-cuerpo">
 <a class="salto-contenido" href="#contenido">Saltar al contenido</a>
@@ -20,7 +22,7 @@
             <span><strong><?= escapar_panel($usuario['nombre']) ?></strong><small><?= $usuario['rol'] === 'administrador' ? 'Administrador' : 'Empleado' ?></small></span>
             <form action="cerrar_sesion.php" method="post">
                 <input type="hidden" name="token_csrf" value="<?= escapar_panel(obtener_token_csrf()) ?>">
-                <button class="panel-boton panel-boton--secundario" type="submit">Cerrar sesión</button>
+                <button class="btn btn-outline-primary panel-boton panel-boton--secundario" type="submit">Cerrar sesión</button>
             </form>
         </div>
     </div>
@@ -31,7 +33,7 @@
         <nav class="panel-navegacion" aria-label="Administración">
             <a href="administracion.php"<?= $seccion_actual === 'resumen' ? ' aria-current="page"' : '' ?>>Resumen</a>
             <a href="categorias.php"<?= $seccion_actual === 'categorias' ? ' aria-current="page"' : '' ?>>Categorías</a>
-            <span>Productos <small>Pendiente</small></span>
+            <a href="productos.php"<?= $seccion_actual === 'productos' ? ' aria-current="page"' : '' ?>>Productos</a>
             <span>Solicitudes <small>Pendiente</small></span>
             <?php if ($usuario['rol'] === 'administrador'): ?>
                 <span>Usuarios <small>Pendiente</small></span>

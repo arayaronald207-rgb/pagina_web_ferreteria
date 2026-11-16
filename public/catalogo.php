@@ -4,121 +4,28 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'conexion.php';
 
-function escapar_catalogo(mixed $valor): string
-{
-    return htmlspecialchars((string) $valor, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-}
-
-function obtener_ruta_imagen_catalogo(?string $ruta_imagen): ?string
-{
-    if ($ruta_imagen === null || trim($ruta_imagen) === '') {
-        return null;
-    }
-
-    $ruta_imagen = str_replace('\\', '/', trim($ruta_imagen));
-
-    if (str_starts_with($ruta_imagen, 'public/')) {
-        $ruta_imagen = substr($ruta_imagen, strlen('public/'));
-    }
-
-    if (str_starts_with($ruta_imagen, '/')) {
-        $ruta_imagen = ltrim($ruta_imagen, '/');
-    }
-
-    if (!str_starts_with($ruta_imagen, 'assets/images/') && !str_starts_with($ruta_imagen, 'uploads/')) {
-        return null;
-    }
-
-    $segmentos_ruta = explode('/', $ruta_imagen);
-
-    foreach ($segmentos_ruta as $segmento_ruta) {
-        if ($segmento_ruta === '' || $segmento_ruta === '.' || $segmento_ruta === '..') {
-            return null;
-        }
-    }
-
-    if (!preg_match('/\A[A-Za-z0-9._\/-]+\z/', $ruta_imagen)) {
-        return null;
-    }
-
-    $extension_imagen = strtolower(pathinfo($ruta_imagen, PATHINFO_EXTENSION));
-
-    if (!in_array($extension_imagen, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
-        return null;
-    }
-
-    $archivo_imagen = __DIR__ . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $ruta_imagen);
-
-    if (!is_file($archivo_imagen) || !is_readable($archivo_imagen)) {
-        return null;
-    }
-
-    return $ruta_imagen;
-}
-
-$busqueda = $_GET['buscar'] ?? '';
-
-if (!is_string($busqueda) || strlen($busqueda) > 480 || preg_match('//u', $busqueda) !== 1) {
-    $busqueda = '';
-}
-
-$busqueda = trim($busqueda);
-$valor_categoria = $_GET['categoria'] ?? '';
-$categoria_seleccionada = null;
-
-if (is_string($valor_categoria) && strlen($valor_categoria) <= 400 && preg_match('//u', $valor_categoria) === 1) {
-    $categoria_validada = trim($valor_categoria);
-
-    if ($categoria_validada !== '') {
-        $categoria_seleccionada = $categoria_validada;
-    }
-}
+require_once __DIR__ . '/../app/Servicios/catalogo.php';
+$filtros = filtros_catalogo($_GET);
+$busqueda = $filtros['buscar'] ?? '';
+$categoria_seleccionada = $filtros['categoria'] ?? null;
 
 $pagina_actual = 'productos';
 $termino_busqueda = $busqueda;
 $categorias = [];
 $productos = [];
+$listado = ['total' => 0, 'pagina' => 1, 'paginas' => 1];
 $error_catalogo = false;
+$error_categorias_navegacion = true;
 
 try {
     $conexion = obtener_conexion();
 
-    $consulta_categorias = $conexion->prepare(
-        'SELECT nombre FROM categorias ORDER BY nombre ASC'
-    );
-    $consulta_categorias->execute();
-    $categorias = $consulta_categorias->fetchAll();
-
-    $sql_productos = 'SELECT p.nombre, p.descripcion, p.imagen, c.nombre AS categoria_nombre
-        FROM productos AS p
-        INNER JOIN categorias AS c ON c.id_categoria = p.id_categoria
-        WHERE p.visible = :visible';
-    $parametros_busqueda = [];
-
-    if ($busqueda !== '') {
-        $sql_productos .= ' AND p.nombre LIKE :buscar';
-        $parametros_busqueda['buscar'] = '%' . $busqueda . '%';
-    }
-
-    if ($categoria_seleccionada !== null) {
-        $sql_productos .= ' AND c.nombre = :categoria';
-        $parametros_busqueda['categoria'] = $categoria_seleccionada;
-    }
-
-    $sql_productos .= ' ORDER BY p.nombre ASC';
-    $consulta_productos = $conexion->prepare($sql_productos);
-    $consulta_productos->bindValue(':visible', 1, PDO::PARAM_INT);
-
-    if ($busqueda !== '') {
-        $consulta_productos->bindValue(':buscar', $parametros_busqueda['buscar'], PDO::PARAM_STR);
-    }
-
-    if ($categoria_seleccionada !== null) {
-        $consulta_productos->bindValue(':categoria', $parametros_busqueda['categoria'], PDO::PARAM_STR);
-    }
-
-    $consulta_productos->execute();
-    $productos = $consulta_productos->fetchAll();
+    $categorias = categorias_catalogo($conexion);
+    $error_categorias_navegacion = false;
+    $listado = productos_catalogo($conexion, $busqueda, $categoria_seleccionada, $filtros['pagina'] ?? 1);
+    $productos = $listado['productos'];
+    unset($filtros['pagina']);
+    if ($listado['pagina'] > 1) { $filtros['pagina'] = $listado['pagina']; }
 } catch (Throwable $error) {
     error_log('No se pudo cargar el catálogo público: ' . $error->getMessage());
     $error_catalogo = true;
@@ -133,9 +40,11 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Consulta los productos publicados por FERRETERÍA EL CRUCE.">
     <title>Catálogo | FERRETERÍA EL CRUCE</title>
+    <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/estilos.css">
     <link rel="stylesheet" href="assets/css/catalogo.css">
     <script src="assets/js/navegacion.js" defer></script>
+    <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js" defer></script>
 </head>
 <body class="sitio-publico">
     <a class="salto-contenido" href="#contenido">Saltar al contenido</a>
@@ -149,23 +58,19 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
         </section>
 
         <div class="contenedor">
-            <form class="catalogo__panel-filtros" id="filtros" method="get" action="catalogo.php">
-                <input name="buscar" type="hidden" value="<?= escapar_catalogo($busqueda) ?>">
-                <?php if ($busqueda !== ''): ?>
-                    <p class="catalogo__busqueda-activa">Buscando: <strong><?= escapar_catalogo($busqueda) ?></strong></p>
-                <?php endif; ?>
-                <div class="catalogo__campo">
-                    <label for="categoria_catalogo">Categoría</label>
-                    <select id="categoria_catalogo" name="categoria">
-                        <option value="">Todas las categorías</option>
-                        <?php foreach ($categorias as $categoria): ?>
-                            <option value="<?= escapar_catalogo($categoria['nombre']) ?>"<?= $categoria_seleccionada === $categoria['nombre'] ? ' selected' : '' ?>><?= escapar_catalogo($categoria['nombre']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+            <?php if ($filtros_activos): ?>
+                <div class="catalogo__filtros-activos" id="filtros" role="region" aria-label="Filtros aplicados">
+                    <p>
+                        <?php if ($categoria_seleccionada !== null): ?>
+                            <span>Categoría: <strong><?= escapar_catalogo($categoria_seleccionada) ?></strong></span>
+                        <?php endif; ?>
+                        <?php if ($busqueda !== ''): ?>
+                            <span>Búsqueda: <strong><?= escapar_catalogo($busqueda) ?></strong></span>
+                        <?php endif; ?>
+                    </p>
+                    <a class="catalogo__limpiar" href="catalogo.php">Quitar filtros <span aria-hidden="true">×</span></a>
                 </div>
-                <button class="catalogo__boton" type="submit">Aplicar categoría</button>
-                <a class="catalogo__limpiar" href="catalogo.php">Limpiar filtros</a>
-            </form>
+            <?php endif; ?>
 
             <section class="catalogo__resultados" id="productos" aria-label="Resultados del catálogo" aria-live="polite">
                 <?php if ($error_catalogo): ?>
@@ -193,31 +98,39 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
                         <a class="catalogo__estado-enlace" href="#contacto">Contactar con la ferretería</a>
                     </div>
                 <?php else: ?>
-                    <div class="catalogo__rejilla">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 catalogo__rejilla">
                         <?php foreach ($productos as $producto): ?>
-                            <?php $ruta_imagen = obtener_ruta_imagen_catalogo($producto['imagen']); ?>
-                            <article class="producto">
-                                <div class="producto__imagen<?= $ruta_imagen === null ? ' producto__imagen--vacia' : '' ?>">
+                            <?php $ruta_imagen = ruta_imagen_producto($producto['imagen']);
+                            $enlace_detalle = 'producto.php?' . http_build_query(['id' => $producto['id_producto']] + $filtros, '', '&', PHP_QUERY_RFC3986); ?>
+                            <div class="col"><article class="card producto h-100">
+                                <a href="<?= escapar_catalogo($enlace_detalle) ?>" class="producto__imagen<?= $ruta_imagen === null ? ' producto__imagen--vacia' : '' ?>">
                                     <?php if ($ruta_imagen !== null): ?>
                                         <img src="<?= escapar_catalogo($ruta_imagen) ?>" alt="<?= escapar_catalogo($producto['nombre']) ?>" loading="lazy">
                                     <?php else: ?>
-                                        <span>Imagen no disponible</span>
+                                        <img src="assets/images/producto_sin_imagen.svg" alt="Sin fotografía disponible" loading="lazy">
                                     <?php endif; ?>
-                                </div>
-                                <div class="producto__contenido">
+                                </a>
+                                <div class="card-body producto__contenido">
                                     <p class="producto__categoria"><?= escapar_catalogo($producto['categoria_nombre']) ?></p>
-                                    <h2><?= escapar_catalogo($producto['nombre']) ?></h2>
+                                    <h2><a href="<?= escapar_catalogo($enlace_detalle) ?>"><?= escapar_catalogo($producto['nombre']) ?></a></h2>
                                     <?php if (is_string($producto['descripcion']) && trim($producto['descripcion']) !== ''): ?>
                                         <p class="producto__descripcion"><?= nl2br(escapar_catalogo($producto['descripcion'])) ?></p>
                                     <?php endif; ?>
-                                    <?php $mensaje_whatsapp = 'Hola, quisiera consultar sobre ' . $producto['nombre'] . '.'; ?>
-                                    <a class="producto__consulta" href="https://wa.me/50670988980?text=<?= rawurlencode($mensaje_whatsapp) ?>" target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+                                    <a class="producto__detalles" href="<?= escapar_catalogo($enlace_detalle) ?>">Ver detalles <span aria-hidden="true">→</span></a>
+                                    <a class="producto__consulta" href="<?= escapar_catalogo(whatsapp_producto($producto)) ?>" target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
                                 </div>
-                            </article>
+                            </article></div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
             </section>
+            <?php if (!$error_catalogo && $listado['paginas'] > 1): ?>
+                <nav class="catalogo__paginacion" aria-label="Paginación del catálogo">
+                    <?php if ($listado['pagina'] > 1): ?><a class="btn btn-outline-primary" href="<?= escapar_catalogo(url_catalogo(array_merge($filtros, ['pagina' => $listado['pagina'] - 1]))) ?>#productos">Anterior</a><?php endif; ?>
+                    <span>Página <?= $listado['pagina'] ?> de <?= $listado['paginas'] ?> · <?= $listado['total'] ?> productos</span>
+                    <?php if ($listado['pagina'] < $listado['paginas']): ?><a class="btn btn-outline-primary" href="<?= escapar_catalogo(url_catalogo(array_merge($filtros, ['pagina' => $listado['pagina'] + 1]))) ?>#productos">Siguiente</a><?php endif; ?>
+                </nav>
+            <?php endif; ?>
         </div>
     </main>
 
