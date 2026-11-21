@@ -363,7 +363,7 @@ def run_admin(browser, base):
                 check(page.locator('.panel-indicadores .card').count() == 3, 'Faltan indicadores')
             else:
                 check(page.locator('table tbody tr').count() == 7, 'Listado incompleto')
-                check(page.locator('tr').filter(has_text='Herramientas').locator('button').count() == 0,
+                check(page.locator('tr').filter(has_text='Herramientas').locator('button[aria-label^="Eliminar "]').count() == 0,
                       'Categoría con productos ofrece eliminación')
                 if width == 320:
                     check(page.locator('.table-responsive').evaluate('e => e.scrollWidth > e.clientWidth'),
@@ -378,7 +378,7 @@ def run_admin(browser, base):
     page.locator('.panel-formulario button[type="submit"]').click()
     check(page.locator('.alert-danger').is_visible(), 'Falta mensaje de categoría duplicada')
     page.goto(base + 'categorias.php')
-    page.locator('tr').filter(has_text='Sin productos').locator('button').click()
+    page.locator('tr').filter(has_text='Sin productos').get_by_role('button', name='Eliminar Sin productos', exact=True).click()
     check(page.locator('.panel-confirmacion').is_visible(), 'No aparece confirmación de eliminación')
     page.locator('.panel-confirmacion a').click()
     check(page.locator('.panel-confirmacion').count() == 0, 'Cancelar no cierra confirmación')

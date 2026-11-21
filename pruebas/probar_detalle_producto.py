@@ -143,7 +143,7 @@ def run(browser, base, root):
         page.goto(base + f'productos.php?editar={product_id}')
         page.locator('#fotografias_producto').set_input_files(photos * 2)
         page.locator('.panel-producto-formulario button[type="submit"]').click()
-        check(page.locator('.alert-danger').is_visible(), 'Límite de cinco fotos adicionales')
+        check(page.locator('.panel-aviso--error').is_visible(), 'Límite de cinco fotos adicionales')
         check(set(storage.iterdir()) == files_before, 'Validaciones no crean archivos')
 
         # Guardar datos normales conserva galería y especificaciones omitidas.

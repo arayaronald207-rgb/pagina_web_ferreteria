@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/config/conexion.php';
+require_once dirname(__DIR__) . '/app/Servicios/catalogo.php';
+header('Cache-Control: no-store');
 
 $pagina_actual = 'inicio';
 $termino_busqueda = '';
@@ -12,9 +14,7 @@ $error_categorias_portada = false;
 
 try {
     // Solo nombres registrados: no se publican conteos ni datos de inventario.
-    $consulta = obtener_conexion()->prepare('SELECT nombre FROM categorias ORDER BY nombre ASC');
-    $consulta->execute();
-    $categorias_navegacion = $consulta->fetchAll();
+    $categorias_navegacion = categorias_catalogo(obtener_conexion());
     $categorias_portada = array_slice($categorias_navegacion, 0, 6);
 } catch (Throwable $error) {
     error_log('No se pudieron cargar las categorías de la portada. Código: ' . $error->getCode());

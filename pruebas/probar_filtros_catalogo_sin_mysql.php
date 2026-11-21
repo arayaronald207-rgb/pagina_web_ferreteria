@@ -27,6 +27,13 @@ $casos = [
     'vacio' => [[], []],
     'error' => [[], []],
 ];
+foreach ([1, 2, 6, 11, 999] as $pagina) {
+    $primero = (min($pagina, 11) - 1) * 12 + 1;
+    $casos['paginacion_' . $pagina] = [
+        ['buscar' => 'Martillo', 'categoria' => 'Herramientas', 'pagina' => $pagina],
+        array_map(fn($n) => sprintf('Martillo %03d', $n), range($primero, min($primero + 11, 125))),
+    ];
+}
 
 if (($argv[1] ?? '') !== '--caso') {
     foreach (array_keys($casos) as $caso) {
@@ -85,6 +92,13 @@ try {
             (3, 2, 'Brocha', 'Dato ficticio', NULL, 1, 'COD-3'),
             (4, 3, 'Oculto', 'No debe publicarse', NULL, 0, 'COD-4')");
     }
+    if (str_starts_with($caso, 'paginacion_')) {
+        $pdo->exec('DELETE FROM productos'); // Solo la base SQLite en memoria de esta prueba.
+        $insertar = $pdo->prepare('INSERT INTO productos VALUES (?, 1, ?, ?, NULL, 1, ?)');
+        for ($n = 1; $n <= 125; $n++) {
+            $insertar->execute([$n, sprintf('Martillo %03d', $n), 'Dato ficticio', 'P-' . $n]);
+        }
+    }
     if ($caso === 'error') {
         // Fallo inducido únicamente en SQLite; el detalle nunca debe aparecer en HTML.
         $pdo->exec('DROP TABLE productos');
@@ -108,6 +122,7 @@ try {
     comprobar_filtro($xpath->query('//main//form | //select[@name="categoria"]')->length === 0, 'El formulario grande sigue visible');
     comprobar_filtro($xpath->query('//input[@id="busqueda_cabecera"]')->item(0)->getAttribute('value') === $buscar, 'El encabezado perdió la búsqueda');
     $categoria = is_string($entrada['categoria'] ?? '') ? trim($entrada['categoria'] ?? '') : '';
+    if ($caso === 'inyeccion') { $categoria = ''; }
     $resumen = $xpath->query('//div[@id="filtros"]')->item(0);
     comprobar_filtro(($resumen !== null) === ($buscar !== '' || $categoria !== ''), 'Resumen de filtros incorrecto');
     if ($resumen !== null) {
@@ -131,6 +146,8 @@ try {
         comprobar_filtro(str_contains($html, 'Estamos preparando nuestro catálogo'), 'Estado vacío incorrecto');
     } elseif ($caso === 'error') {
         comprobar_filtro(str_contains($html, 'No pudimos cargar el catálogo') && !str_contains($html, 'SQLSTATE'), 'Error interno expuesto');
+    } elseif ($caso === 'inyeccion') {
+        comprobar_filtro(str_contains($html, 'La categoría seleccionada no está disponible'), 'Categoría inválida debe rechazarse sin ampliar resultados');
     } elseif ($esperados === [] && $categoria !== '' && $buscar === '') {
         comprobar_filtro(str_contains($html, 'No hay productos publicados en esta categoría'), 'Falta explicación de categoría sin productos');
     } elseif ($esperados === []) {
@@ -140,7 +157,17 @@ try {
     if (($salidaHtml = getenv('CRUCE_PRUEBA_HTML')) !== false && $caso === 'combinados') {
         file_put_contents($salidaHtml, str_replace('<head>', '<head><base href="http://localhost/pagina_web_ferreteria/public/">', $html));
     }
-    echo "OK: $caso\n";
+    $paginacion = $xpath->query('//nav[@class="catalogo__paginacion"]');
+    comprobar_filtro($paginacion->length === (str_starts_with($caso, 'paginacion_') ? 1 : 0), 'Controles innecesarios o ausentes');
+    if (str_starts_with($caso, 'paginacion_')) {
+        comprobar_filtro($xpath->query('//ul[@class="catalogo__paginas"]/li')->length <= 7, 'Demasiados números de página');
+        comprobar_filtro($xpath->query('//span[@aria-current="page"]')->item(0)->textContent === (string) min($entrada['pagina'], 11), 'Página actual incorrecta');
+        foreach ($xpath->query('//nav[@class="catalogo__paginacion"]//a') as $enlace) {
+            parse_str(parse_url($enlace->getAttribute('href'), PHP_URL_QUERY), $parametros);
+            comprobar_filtro($parametros['buscar'] === 'Martillo' && $parametros['categoria'] === 'Herramientas', 'Paginación perdió filtros');
+        }
+    }
+    echo ($argv[3] ?? '') === '--html' ? $html : "OK: $caso\n";
 } finally {
     foreach (array_reverse($archivos) as $archivo) { if (is_file($archivo)) { unlink($archivo); } }
     foreach (array_reverse($directorios) as $directorio) { if (is_dir($directorio)) { rmdir($directorio); } }

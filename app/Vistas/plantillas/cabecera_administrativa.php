@@ -34,9 +34,9 @@
             <a href="administracion.php"<?= $seccion_actual === 'resumen' ? ' aria-current="page"' : '' ?>>Resumen</a>
             <a href="categorias.php"<?= $seccion_actual === 'categorias' ? ' aria-current="page"' : '' ?>>Categorías</a>
             <a href="productos.php"<?= $seccion_actual === 'productos' ? ' aria-current="page"' : '' ?>>Productos</a>
-            <span>Solicitudes <small>Pendiente</small></span>
+            <a href="solicitudes.php"<?= $seccion_actual === 'solicitudes' ? ' aria-current="page"' : '' ?>>Solicitudes</a>
             <?php if ($usuario['rol'] === 'administrador'): ?>
-                <span>Usuarios <small>Pendiente</small></span>
+                <a href="usuarios.php"<?= $seccion_actual === 'usuarios' ? ' aria-current="page"' : '' ?>>Usuarios</a>
             <?php endif; ?>
         </nav>
         <a class="panel-volver" href="index.php">Ver sitio público ↗</a>

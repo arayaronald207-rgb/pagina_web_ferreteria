@@ -83,6 +83,9 @@ function establecer_sesion_usuario(array $usuario): void
         'ultima_actividad' => time(),
         'token_csrf' => bin2hex(random_bytes(32)),
     ];
+    if (is_string($usuario['clave_hash'] ?? null)) {
+        $_SESSION['credencial_usuario'] = hash('sha256', $usuario['clave_hash']);
+    }
 }
 
 function obtener_usuario_actual(): ?array

@@ -35,4 +35,13 @@
             </iframe>
         </div>
     </div>
+    <div class="contenedor pie-pagina__inferior">
+        <a class="pie-pagina__acceso" href="iniciar_sesion.php">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <rect x="5" y="10" width="14" height="11" rx="2" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2" />
+            </svg>
+            <span>Acceso al personal</span>
+        </a>
+    </div>
 </footer>

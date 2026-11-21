@@ -10,11 +10,12 @@
         <div class="col-12 panel-acciones"><button type="button" class="btn btn-primary panel-boton" id="masiva-revisar" disabled>Revisar acción</button><button type="button" class="btn btn-outline-primary panel-boton" id="masiva-limpiar">Limpiar selección</button><a href="categorias.php" class="btn btn-outline-primary panel-boton">Administrar categorías</a></div>
     </div>
     <p class="alert alert-danger mt-3" id="masiva-error" role="alert" hidden></p>
+    <button type="button" class="btn btn-outline-primary panel-boton" id="masiva-sincronizar" hidden>Revisar estado y recuperar controles</button>
     <section class="mt-3" id="masiva-previa" aria-labelledby="masiva-previa-titulo" hidden>
         <h4 class="h5" id="masiva-previa-titulo" tabindex="-1">Vista previa de la acción</h4>
         <p id="masiva-resumen"></p>
         <div class="table-responsive"><table class="table table-sm"><caption>Situación al preparar la vista previa</caption><thead><tr><th>Categoría actual</th><th>Estado actual</th><th>Cantidad</th></tr></thead><tbody id="masiva-grupos"></tbody></table></div>
-        <p class="form-text">Cambiar categoría conserva la publicación. Publicar u ocultar conserva la categoría. Si cambia la categoría o el estado de un producto después de esta revisión, se omitirá. Cada lote se confirma por separado; detener no revierte los anteriores.</p>
+        <p class="form-text">Cambiar categoría conserva la publicación. Publicar u ocultar conserva la categoría. Si cambia la categoría o el estado de un producto después de esta revisión, se omitirá. Cada lote se guarda por separado; detener no revierte los anteriores. Al terminar se actualiza el listado conservando los filtros.</p>
         <div class="form-check mb-3" id="masiva-consentimiento"><input class="form-check-input" type="checkbox" id="masiva-aceptar"><label class="form-check-label" for="masiva-aceptar">Revisé la cantidad, la categoría y el estado; autorizo aplicar esta acción a los productos seleccionados.</label></div>
         <progress id="masiva-progreso" class="w-100" value="0" max="1" aria-label="Productos procesados"></progress>
         <p id="masiva-resultado" role="status"></p>

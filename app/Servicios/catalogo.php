@@ -29,25 +29,41 @@ function url_catalogo(array $filtros): string
 
 function categorias_catalogo(PDO $conexion): array
 {
-    return $conexion->query('SELECT nombre FROM categorias ORDER BY nombre ASC')->fetchAll();
+    return $conexion->query('SELECT c.nombre FROM categorias c WHERE ' . condicion_categoria_publica($conexion) . ' ORDER BY c.nombre ASC')->fetchAll();
+}
+
+// Una ventana acotada evita generar enlaces para todas las páginas del catálogo.
+function paginas_catalogo(int $actual, int $total): array
+{
+    if ($total <= 7) { return range(1, max(1, $total)); }
+    $actual = min(max(1, $actual), $total);
+    $inicio = max(2, min($actual - 1, $total - 3));
+    $fin = min($total - 1, max($actual + 1, 4));
+    $numeros = [1];
+    if ($inicio > 2) { $numeros[] = $inicio === 3 ? 2 : null; }
+    foreach (range($inicio, $fin) as $numero) { $numeros[] = $numero; }
+    if ($fin < $total - 1) { $numeros[] = $fin === $total - 2 ? $total - 1 : null; }
+    $numeros[] = $total;
+    return $numeros;
 }
 
 function productos_catalogo(PDO $conexion, string $busqueda, ?string $categoria, int $pagina = 1): array
 {
-    $sql = ' FROM productos p INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.visible = 1';
+    $sql = ' FROM productos p INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.visible = 1 AND ' . condicion_categoria_publica($conexion);
     $parametros = [];
     if ($busqueda !== '') { $sql .= ' AND ' . busqueda_productos_sql($busqueda, $parametros); }
     if ($categoria !== null) { $sql .= ' AND c.nombre = :categoria'; $parametros['categoria'] = $categoria; }
     $consulta = $conexion->prepare('SELECT COUNT(*)' . $sql);
     $consulta->execute($parametros);
     $total = (int) $consulta->fetchColumn();
-    $paginas = max(1, (int) ceil($total / 24));
+    $por_pagina = 12;
+    $paginas = max(1, (int) ceil($total / $por_pagina));
     $pagina = min(max(1, $pagina), $paginas);
     $consulta = $conexion->prepare('SELECT p.id_producto, p.codigo, p.nombre, p.descripcion, p.imagen, c.nombre AS categoria_nombre'
         . $sql . ' ORDER BY p.nombre, p.id_producto LIMIT :limite OFFSET :inicio');
     foreach ($parametros as $nombre => $valor) { $consulta->bindValue(':' . $nombre, $valor, PDO::PARAM_STR); }
-    $consulta->bindValue(':limite', 24, PDO::PARAM_INT);
-    $consulta->bindValue(':inicio', ($pagina - 1) * 24, PDO::PARAM_INT);
+    $consulta->bindValue(':limite', $por_pagina, PDO::PARAM_INT);
+    $consulta->bindValue(':inicio', ($pagina - 1) * $por_pagina, PDO::PARAM_INT);
     $consulta->execute();
     return ['productos' => $consulta->fetchAll(), 'total' => $total, 'pagina' => $pagina, 'paginas' => $paginas];
 }
@@ -55,7 +71,7 @@ function productos_catalogo(PDO $conexion, string $busqueda, ?string $categoria,
 function producto_publicado(PDO $conexion, int $id): ?array
 {
     $consulta = $conexion->prepare('SELECT p.*, c.nombre AS categoria_nombre FROM productos p
-        INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.id_producto = :id AND p.visible = 1');
+        INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.id_producto = :id AND p.visible = 1 AND ' . condicion_categoria_publica($conexion));
     $consulta->execute(['id' => $id]);
     return $consulta->fetch() ?: null;
 }

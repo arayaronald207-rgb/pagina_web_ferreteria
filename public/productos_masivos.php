@@ -26,8 +26,9 @@ try {
             throw new InvalidArgumentException('La vista previa venció o fue reemplazada. Revisa nuevamente la selección.');
         }
         if ($accion === 'confirmar') {
-            if (($entrada['confirmar'] ?? null) !== true || $trabajo['estado'] !== 'previa') { throw new InvalidArgumentException('Confirma expresamente la acción revisada.'); }
-            $trabajo['estado'] = 'procesando';
+            if (($entrada['confirmar'] ?? null) !== true) { throw new InvalidArgumentException('Confirma expresamente la acción revisada.'); }
+            // Una respuesta perdida puede reenviarse: no reiniciar ni duplicar los lotes.
+            if ($trabajo['estado'] === 'previa') { $trabajo['estado'] = 'procesando'; }
         } elseif ($accion === 'lote') {
             $trabajo = procesar_accion_productos($conexion, $trabajo, $entrada['inicio'] ?? null);
         } elseif ($accion === 'cancelar') { $trabajo = null; }

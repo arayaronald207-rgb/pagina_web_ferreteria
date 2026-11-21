@@ -10,7 +10,7 @@ function preparar_accion_productos(PDO $db, array $entrada): array
 {
     $ids = $entrada['ids'] ?? null;
     $accion = $entrada['operacion'] ?? null;
-    if (!is_array($ids) || !$ids || count($ids) > LIMITE_SELECCION_PRODUCTOS
+    if (!is_array($ids) || !array_is_list($ids) || !$ids || count($ids) > LIMITE_SELECCION_PRODUCTOS
         || !in_array($accion, ['categoria', 'publicar', 'ocultar'], true)) {
         throw new InvalidArgumentException('Selecciona entre 1 y 10.000 productos y una acción válida.');
     }

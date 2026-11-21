@@ -6,7 +6,7 @@
     const cajas = [...document.querySelectorAll('[data-seleccionar-producto]')];
     const pagina = el('seleccionar-pagina');
     const clave = `productos-seleccion:${panel.dataset.usuario}:${panel.dataset.token}`;
-    let seleccion = new Set(), trabajo = null, ocupado = false, pausa = false;
+    let seleccion = new Set(), trabajo = null, ocupado = false, pausa = false, verificado = false;
     const error = mensaje => { el('masiva-error').textContent = mensaje; el('masiva-error').hidden = !mensaje; };
     try {
         const ids = JSON.parse(sessionStorage.getItem(clave) || '[]');
@@ -17,7 +17,7 @@
         catch (_) { error('El navegador no permite conservar la selección entre páginas. No navegues hasta completar o limpiar la selección.'); }
     };
     const pintar = () => {
-        const bloqueado = ocupado || trabajo?.estado === 'procesando';
+        const bloqueado = !verificado || ocupado || trabajo?.estado === 'procesando';
         cajas.forEach(caja => { caja.checked = seleccion.has(Number(caja.dataset.seleccionarProducto)); caja.disabled = bloqueado; });
         if (pagina) {
             pagina.disabled = bloqueado;
@@ -28,6 +28,7 @@
         ['masiva-operacion', 'masiva-categoria', 'masiva-limpiar'].forEach(id => { el(id).disabled = bloqueado; });
         el('masiva-revisar').disabled = bloqueado || !seleccion.size;
         el('masiva-destino').hidden = el('masiva-operacion').value !== 'categoria';
+        el('masiva-sincronizar').hidden = verificado || ocupado;
         el('masiva-previa').hidden = !trabajo;
         if (!trabajo) return;
         const etiquetas = {categoria: 'Cambiar categoría', publicar: 'Publicar', ocultar: 'Ocultar'};
@@ -43,10 +44,12 @@
         el('masiva-resultado').textContent = `${trabajo.estado === 'terminado' ? 'Operación terminada. ' : ''}${trabajo.procesados} de ${trabajo.total} procesados. Modificados: ${trabajo.modificados}. Ya tenían el valor: ${trabajo.sin_cambios}. Omitidos por cambios o eliminación: ${trabajo.omitidos}.`;
         el('masiva-consentimiento').hidden = trabajo.estado !== 'previa';
         el('masiva-confirmar').hidden = trabajo.estado !== 'previa';
-        el('masiva-confirmar').disabled = ocupado || !el('masiva-aceptar').checked;
+        el('masiva-confirmar').disabled = !verificado || ocupado || !el('masiva-aceptar').checked;
         el('masiva-continuar').hidden = trabajo.estado !== 'procesando' || ocupado;
         el('masiva-pausar').hidden = trabajo.estado !== 'procesando' || !ocupado;
-        el('masiva-cancelar').disabled = ocupado;
+        el('masiva-continuar').disabled = !verificado;
+        el('masiva-cancelar').disabled = !verificado || ocupado;
+        el('masiva-cancelar').textContent = trabajo.estado === 'procesando' ? 'Detener lotes pendientes' : 'Cerrar operación';
     };
     const invalidar = () => { trabajo = null; el('masiva-aceptar').checked = false; guardar(); pintar(); };
     cajas.forEach(caja => caja.addEventListener('change', () => {
@@ -66,15 +69,44 @@
     const api = async datos => {
         const respuesta = await fetch('productos_masivos.php', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': panel.dataset.token}, body: JSON.stringify(datos)});
         if (respuesta.redirected) throw new Error('La sesión venció. Vuelve a iniciar sesión.');
-        const resultado = await respuesta.json();
+        let resultado;
+        try { resultado = await respuesta.json(); }
+        catch (_) { throw new Error('No se recibió una respuesta válida. Revisa el estado antes de continuar.'); }
         if (!respuesta.ok) throw new Error(resultado.error || 'No se pudo completar la operación.');
         return resultado.trabajo;
+    };
+    const actualizarListado = () => {
+        // Navegar por GET actualiza el listado sin reenviar un formulario individual POST.
+        ocupado = false;
+        window.location.replace(window.location.pathname + window.location.search);
+    };
+    const terminar = () => { seleccion.clear(); guardar(); actualizarListado(); };
+    const sincronizar = async (recuperando = false) => {
+        const actual = await api({accion: 'estado'});
+        const recienTerminado = actual?.estado === 'terminado' && actual.id === trabajo?.id && trabajo.estado !== 'terminado';
+        const detenido = trabajo?.estado === 'procesando' && actual === null;
+        // Las selecciones pertenecen a cada pestaña; una previa guardada en la sesión
+        // puede corresponder a otra selección. Siempre debe revisarse de nuevo.
+        trabajo = actual?.estado === 'previa' ? null : actual;
+        el('masiva-aceptar').checked = false;
+        verificado = true;
+        if (recuperando && recienTerminado) terminar();
+        else if (recuperando && detenido) actualizarListado();
     };
     const ejecutar = async tarea => {
         if (ocupado) return;
         ocupado = true; error(''); pintar();
         try { await tarea(); }
-        catch (fallo) { error(fallo.message || 'No se recibió la respuesta. Actualiza el listado para revisar el progreso.'); }
+        catch (fallo) {
+            const recuperar = verificado;
+            verificado = false;
+            // Consultar el progreso nunca ejecuta lotes. Una confirmación o un lote
+            // pueden haber llegado al servidor aunque se pierda su respuesta.
+            if (recuperar) {
+                try { await sincronizar(true); } catch (_) { /* Reintento explícito al recuperar conexión. */ }
+            }
+            error((fallo.message || 'No se recibió la respuesta.') + ' Revisa el estado antes de continuar.');
+        }
         finally { ocupado = false; pintar(); }
     };
     el('masiva-revisar').addEventListener('click', () => ejecutar(async () => {
@@ -86,7 +118,7 @@
         while (trabajo?.estado === 'procesando' && !pausa) {
             trabajo = await api({accion: 'lote', trabajo: trabajo.id, inicio: trabajo.procesados}); pintar();
         }
-        if (trabajo?.estado === 'terminado') { seleccion.clear(); guardar(); }
+        if (trabajo?.estado === 'terminado') terminar();
     };
     el('masiva-confirmar').addEventListener('click', () => ejecutar(async () => {
         if (!el('masiva-aceptar').checked || trabajo?.estado !== 'previa') return;
@@ -94,7 +126,14 @@
     }));
     el('masiva-continuar').addEventListener('click', () => ejecutar(lotes));
     el('masiva-pausar').addEventListener('click', () => { pausa = true; });
-    el('masiva-cancelar').addEventListener('click', () => ejecutar(async () => { trabajo = await api({accion: 'cancelar', trabajo: trabajo.id}); el('masiva-aceptar').checked = false; }));
+    el('masiva-cancelar').addEventListener('click', () => ejecutar(async () => {
+        const detener = trabajo?.estado === 'procesando';
+        if (detener && !window.confirm('¿Detener los lotes pendientes? Los cambios ya guardados se conservarán.')) return;
+        trabajo = await api({accion: 'cancelar', trabajo: trabajo.id});
+        el('masiva-aceptar').checked = false;
+        if (detener) actualizarListado();
+    }));
+    el('masiva-sincronizar').addEventListener('click', () => ejecutar(() => sincronizar(true)));
     window.addEventListener('beforeunload', evento => { if (ocupado) { evento.preventDefault(); evento.returnValue = ''; } });
-    ejecutar(async () => { trabajo = await api({accion: 'estado'}); });
+    ejecutar(() => sincronizar());
 })();

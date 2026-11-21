@@ -2,6 +2,30 @@
 
 declare(strict_types=1);
 
+function visibilidad_categorias_disponible(PDO $conexion): bool
+{
+    try {
+        $conexion->query('SELECT visible FROM categorias LIMIT 0');
+        return true;
+    } catch (PDOException $error) {
+        if ($error->getCode() === '42S22'
+            || ($conexion->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite'
+                && str_contains($error->getMessage(), 'no such column: visible'))) {
+            return false;
+        }
+        throw $error;
+    }
+}
+
+// Fragmento fijo, sin entradas del cliente. Todas las consultas públicas usan el alias c.
+// Antes de activar 004, Sin clasificar ya queda excluida sin escribir en la base.
+function condicion_categoria_publica(PDO $conexion): string
+{
+    return visibilidad_categorias_disponible($conexion)
+        ? 'c.visible = 1'
+        : "LOWER(TRIM(c.nombre)) <> 'sin clasificar'";
+}
+
 function validar_nombre_categoria(mixed $valor): string
 {
     if (!is_string($valor) || !mb_check_encoding($valor, 'UTF-8')) {
@@ -31,10 +55,11 @@ function validar_id_categoria(mixed $valor): int
 
 function listar_categorias(PDO $conexion): array
 {
+    $visibilidad = condicion_categoria_publica($conexion);
     $consulta = $conexion->prepare(
-        'SELECT c.id_categoria, c.nombre, COUNT(p.id_producto) AS productos
+        'SELECT c.id_categoria, c.nombre, (' . $visibilidad . ') AS visible, COUNT(p.id_producto) AS productos
         FROM categorias c LEFT JOIN productos p ON p.id_categoria = c.id_categoria
-        GROUP BY c.id_categoria, c.nombre ORDER BY c.nombre ASC'
+        GROUP BY c.id_categoria, c.nombre, (' . $visibilidad . ') ORDER BY c.nombre ASC'
     );
     $consulta->execute();
     return $consulta->fetchAll();
@@ -68,8 +93,13 @@ function guardar_categoria(PDO $conexion, string $nombre, ?int $id = null): void
     }
     try {
         if ($id === null) {
-            $consulta = $conexion->prepare('INSERT INTO categorias (nombre) VALUES (:nombre)');
-            $consulta->execute(['nombre' => $nombre]);
+            if (visibilidad_categorias_disponible($conexion)) {
+                $consulta = $conexion->prepare('INSERT INTO categorias (nombre, visible) VALUES (:nombre, :visible)');
+                $consulta->execute(['nombre' => $nombre, 'visible' => mb_strtolower($nombre, 'UTF-8') === 'sin clasificar' ? 0 : 1]);
+            } else {
+                $consulta = $conexion->prepare('INSERT INTO categorias (nombre) VALUES (:nombre)');
+                $consulta->execute(['nombre' => $nombre]);
+            }
         } else {
             $consulta = $conexion->prepare('UPDATE categorias SET nombre = :nombre WHERE id_categoria = :id');
             $consulta->execute(['nombre' => $nombre, 'id' => $id]);
@@ -84,6 +114,20 @@ function guardar_categoria(PDO $conexion, string $nombre, ?int $id = null): void
         }
         throw $error;
     }
+}
+
+function cambiar_visibilidad_categoria(PDO $conexion, int $id, mixed $visible): void
+{
+    if (!in_array($visible, ['0', '1'], true)) {
+        throw new InvalidArgumentException('Selecciona una visibilidad válida para la categoría.');
+    }
+    if (!visibilidad_categorias_disponible($conexion)) {
+        throw new InvalidArgumentException('La visibilidad de categorías está pendiente de activación. Contacta con la persona responsable del sistema.');
+    }
+    // No se cambia la publicación individual, la categoría asignada ni ningún dato del producto.
+    $consulta = $conexion->prepare('UPDATE categorias SET visible = :visible WHERE id_categoria = :id');
+    $consulta->execute(['visible' => (int) $visible, 'id' => $id]);
+    if ($consulta->rowCount() === 0) { buscar_categoria($conexion, $id); }
 }
 
 function eliminar_categoria(PDO $conexion, int $id): void

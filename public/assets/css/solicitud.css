@@ -1,0 +1,53 @@
+.solicitud { padding-block: clamp(28px, 4vw, 54px); }
+.solicitud__titulo { max-width: 760px; margin-bottom: 28px; }
+.solicitud__titulo h1 { margin: 0 0 16px; font-size: clamp(28px, 4vw, 42px); font-weight: 700; }
+.solicitud__titulo p { line-height: 1.7; }
+.solicitud__etiqueta { color: var(--rojo); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.solicitud__ayuda { color: var(--gris); font-size: 14px; }
+.solicitud__vacia { padding: clamp(24px, 5vw, 48px); background: var(--blanco); border: 1px solid var(--linea); border-radius: var(--radio-control); text-align: center; }
+.solicitud__vacia h2 { font-size: 24px; }
+.solicitud__vacia p { color: var(--gris); line-height: 1.6; margin-bottom: 24px; }
+.solicitud__barra { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-block: 24px 16px; }
+.solicitud__barra p { margin: 0; font-weight: 600; }
+.solicitud__barra button { min-height: 44px; }
+.solicitud__productos { display: grid; gap: 14px; }
+.solicitud__producto { display: grid; grid-template-columns: 96px minmax(0, 1fr) 110px auto; align-items: center; gap: 22px; padding: 20px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--blanco); }
+.solicitud__foto { width: 96px; height: 96px; object-fit: contain; background: var(--fondo); border-radius: 4px; }
+.solicitud__informacion { min-width: 0; overflow-wrap: anywhere; }
+.solicitud__informacion h2 { font-size: 18px; line-height: 1.4; margin: 0 0 8px; }
+.solicitud__informacion a:hover { text-decoration: underline; }
+.solicitud__codigo { font-size: 13px; color: var(--gris); margin: 0; }
+.solicitud__cantidad label { display: block; font-size: 13px; margin-bottom: 7px; }
+.solicitud__cantidad input { min-height: 44px; }
+.solicitud__quitar { min-height: 44px; padding: 8px 12px; background: transparent; border: 1px solid var(--linea); border-radius: 4px; color: var(--rojo-hover); font-size: 13px; }
+.solicitud__quitar:hover { background: #fff4f4; border-color: var(--rojo); }
+.solicitud__siguiente { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px 32px; align-items: center; margin-top: 32px; padding: clamp(20px, 3vw, 32px); border-top: 3px solid var(--azul); background: var(--blanco); }
+.solicitud__siguiente h2 { font-size: 22px; }
+.solicitud__siguiente p { max-width: 75ch; color: var(--gris); line-height: 1.7; font-size: 14px; }
+.solicitud__volver { grid-column: 1 / -1; width: fit-content; min-height: 44px; display: inline-flex; align-items: center; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.solicitud__registro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.solicitud__panel { min-width: 0; padding: clamp(18px, 3vw, 30px); background: var(--blanco); border: 1px solid var(--linea); border-radius: var(--radio-control); }
+.solicitud__panel h2 { font-size: 22px; margin-bottom: 16px; }
+.solicitud__resumen-lista { list-style: none; padding: 0; margin: 0; }
+.solicitud__resumen-producto { display: flex; gap: 16px; padding-block: 18px; border-bottom: 1px solid var(--linea); }
+.solicitud__resumen-producto img { width: 64px; height: 64px; object-fit: contain; flex-shrink: 0; }
+.solicitud__resumen-producto div { min-width: 0; overflow-wrap: anywhere; }
+.solicitud__resumen-producto span { display: block; font-size: 14px; color: var(--gris); margin-top: 6px; }
+.solicitud__formulario > label { display: block; font-size: 14px; font-weight: 600; margin: 20px 0 8px; }
+.solicitud__formulario .form-control { min-height: 44px; }
+.solicitud__formulario > small { display: block; color: var(--gris); font-size: 13px; margin-top: 8px; }
+.solicitud__formulario > .solicitud__confirmar { display: flex; gap: 12px; align-items: flex-start; line-height: 1.6; font-weight: 400; cursor: pointer; }
+.solicitud__confirmar input { width: 18px; height: 18px; margin-top: 3px; flex-shrink: 0; accent-color: var(--azul); }
+.solicitud__formulario .solicitud-boton { width: 100%; }
+.solicitud__formulario #registro-estado { margin: 12px 0 0; }
+@media (max-width: 800px) {
+    .solicitud__registro { grid-template-columns: minmax(0, 1fr); }
+    .solicitud__producto { grid-template-columns: 72px minmax(0, 1fr); gap: 16px; padding: 16px; }
+    .solicitud__foto { width: 72px; height: 72px; }
+    .solicitud__cantidad { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; }
+    .solicitud__cantidad label { margin: 0; }
+    .solicitud__cantidad input { width: 100px; }
+    .solicitud__quitar { grid-column: 1 / -1; justify-self: start; }
+    .solicitud__siguiente { grid-template-columns: minmax(0, 1fr); }
+    .solicitud__siguiente .solicitud-boton { width: 100%; }
+}

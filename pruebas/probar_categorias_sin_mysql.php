@@ -22,6 +22,12 @@ class ConexionCategoriasPrueba extends PDO
 {
     public array $sentencias = [];
     public function __construct(private array $respuestas) {}
+    public function query(string $query, ?int $fetchMode = null, mixed ...$fetchModeArgs): PDOStatement|false
+    {
+        // Este doble representa el esquema con visibilidad disponible.
+        if ($query !== 'SELECT visible FROM categorias LIMIT 0') { throw new LogicException('Consulta inesperada.'); }
+        return new ConsultaCategoriasPrueba([]);
+    }
     public function prepare(string $query, array $options = []): PDOStatement|false
     {
         $this->sentencias[] = $query;

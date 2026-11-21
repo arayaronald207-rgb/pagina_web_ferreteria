@@ -87,3 +87,19 @@
 .panel-productos-tabla td { max-width: 18rem; overflow-wrap: anywhere; }
 .panel-productos-tabla .panel-acciones { min-width: 12rem; }
 .panel-producto-formulario .form-control, .panel-producto-formulario .form-select { min-width: 0; }
+.panel-solicitudes-tabla { min-width: 680px; }
+.panel-solicitudes-tabla td { max-width: 20rem; overflow-wrap: anywhere; }
+.panel-solicitudes-tabla th[scope="row"] { min-width: 5rem; }
+.panel-solicitudes-tabla td:last-child { min-width: 8rem; }
+.panel-solicitud-datos { margin-bottom: 24px; }
+.panel-solicitud-datos dt { font-size: 13px; margin-top: 18px; }
+.panel-solicitud-datos dd { margin: 6px 0 0; line-height: 1.6; overflow-wrap: anywhere; }
+.panel-solicitud-observaciones { white-space: pre-wrap; }
+.panel-solicitud-productos { min-width: 420px; }
+.panel-solicitud-productos td { overflow-wrap: anywhere; }
+.panel-solicitud-productos td:last-child { min-width: 5rem; }
+.panel-usuarios-tabla { min-width: 720px; }
+.panel-usuarios-tabla td { max-width: 22rem; overflow-wrap: anywhere; }
+.panel-usuarios-tabla .panel-acciones { min-width: 14rem; }
+.panel-usuarios-tabla td:nth-child(2) { min-width: 12rem; }
+.panel-usuarios-tabla td:nth-child(3), .panel-usuarios-tabla td:nth-child(4) { white-space: nowrap; }

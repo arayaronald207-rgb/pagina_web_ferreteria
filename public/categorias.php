@@ -17,6 +17,7 @@ $error_formulario = '';
 $nombre_formulario = '';
 $id_edicion = null;
 $confirmar = null;
+$visibilidad_habilitada = false;
 $mensaje = $_SESSION['mensaje_categorias'] ?? '';
 unset($_SESSION['mensaje_categorias']);
 
@@ -33,6 +34,13 @@ try {
                 $nombre = validar_nombre_categoria($_POST['nombre'] ?? null);
                 guardar_categoria($conexion, $nombre, $id_edicion);
                 $_SESSION['mensaje_categorias'] = $id_edicion === null ? 'Categoría creada correctamente.' : 'Categoría actualizada correctamente.';
+                header('Location: categorias.php', true, 303);
+                exit;
+            } elseif ($accion === 'visibilidad') {
+                cambiar_visibilidad_categoria($conexion, validar_id_categoria($_POST['id_categoria'] ?? null), $_POST['visible'] ?? null);
+                $_SESSION['mensaje_categorias'] = $_POST['visible'] === '1'
+                    ? 'Categoría visible. Sus productos publicados pueden aparecer en el catálogo.'
+                    : 'Categoría oculta. Sus productos ya no aparecen públicamente y se conservan para administrarlos.';
                 header('Location: categorias.php', true, 303);
                 exit;
             } elseif ($accion === 'confirmar_eliminacion') {
@@ -79,6 +87,7 @@ try {
 
 $categorias = null;
 try {
+    $visibilidad_habilitada = visibilidad_categorias_disponible($conexion);
     $categorias = listar_categorias($conexion);
 } catch (Throwable $error) {
     error_log('No se pudo consultar el listado de categorías.');
@@ -92,6 +101,9 @@ require __DIR__ . '/../app/Vistas/plantillas/cabecera_administrativa.php';
     <h1>Categorías</h1>
     <p>Organiza los productos para que tus clientes encuentren lo que necesitan.</p>
 </div>
+<?php if (!$visibilidad_habilitada && $categorias !== null): ?>
+    <p class="alert alert-warning panel-aviso" role="status">La visibilidad de categorías está pendiente de activación por la persona responsable del sistema. Puedes continuar administrándolas. Sin clasificar permanece oculta en el catálogo.</p>
+<?php endif; ?>
 <?php if (is_string($mensaje) && $mensaje !== ''): ?>
     <p class="alert alert-success panel-aviso" role="status"><?= escapar_panel($mensaje) ?></p>
 <?php endif; ?>
@@ -130,6 +142,7 @@ require __DIR__ . '/../app/Vistas/plantillas/cabecera_administrativa.php';
     <div class="col-12 col-xl-7"><section class="card panel-tarjeta" aria-labelledby="listado-titulo">
         <h2 id="listado-titulo">Categorías registradas</h2>
         <p class="form-text panel-ayuda">Solo se pueden eliminar categorías sin productos asociados.</p>
+        <p class="form-text panel-ayuda">Ocultar una categoría retira sus productos del catálogo público sin eliminarlos ni cambiar su publicación individual. Sigue disponible para asignar productos. Sin clasificar se crea oculta por defecto.</p>
         <?php if ($categorias === null): ?>
             <p>El listado no está disponible.</p>
         <?php elseif ($categorias === []): ?>
@@ -138,14 +151,22 @@ require __DIR__ . '/../app/Vistas/plantillas/cabecera_administrativa.php';
             <div class="table-responsive" role="region" aria-labelledby="listado-titulo" tabindex="0">
             <table class="table table-hover align-middle panel-tabla">
                 <caption class="visually-hidden">Categorías, productos asociados y acciones disponibles</caption>
-                <thead><tr><th scope="col">Categoría</th><th scope="col">Productos</th><th scope="col">Acciones</th></tr></thead>
+                <thead><tr><th scope="col">Categoría</th><th scope="col">Productos</th><th scope="col">Visibilidad</th><th scope="col">Acciones</th></tr></thead>
                 <tbody>
                 <?php foreach ($categorias as $categoria): ?>
                     <tr>
                         <th scope="row"><?= escapar_panel($categoria['nombre']) ?></th>
                         <td><?= escapar_panel($categoria['productos']) ?></td>
+                        <td><span class="badge <?= (int) $categoria['visible'] === 1 ? 'text-bg-success' : 'text-bg-secondary' ?>"><?= (int) $categoria['visible'] === 1 ? 'Visible' : 'Oculta' ?></span></td>
                         <td>
                         <div class="panel-acciones">
+                            <form action="categorias.php" method="post">
+                                <input type="hidden" name="token_csrf" value="<?= escapar_panel(obtener_token_csrf()) ?>">
+                                <input type="hidden" name="accion" value="visibilidad">
+                                <input type="hidden" name="id_categoria" value="<?= (int) $categoria['id_categoria'] ?>">
+                                <input type="hidden" name="visible" value="<?= (int) $categoria['visible'] === 1 ? '0' : '1' ?>">
+                                <button class="btn btn-outline-primary panel-boton" type="submit" aria-label="Cambiar visibilidad de <?= escapar_panel($categoria['nombre']) ?>"<?= !$visibilidad_habilitada ? ' disabled' : '' ?>><?= (int) $categoria['visible'] === 1 ? 'Ocultar' : 'Mostrar' ?></button>
+                            </form>
                             <a class="btn btn-outline-primary panel-boton panel-boton--secundario" href="categorias.php?editar=<?= escapar_panel($categoria['id_categoria']) ?>" aria-label="Editar <?= escapar_panel($categoria['nombre']) ?>">Editar</a>
                             <?php if ((int) $categoria['productos'] === 0): ?>
                                 <form action="categorias.php" method="post">

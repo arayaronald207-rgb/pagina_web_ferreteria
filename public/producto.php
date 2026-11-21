@@ -24,6 +24,10 @@ catch (InvalidArgumentException $error) { http_response_code(404); }
 try {
     $conexion = obtener_conexion();
     $categorias_navegacion = categorias_catalogo($conexion);
+    if ($categoria_seleccionada !== null && !in_array($categoria_seleccionada, array_column($categorias_navegacion, 'nombre'), true)) {
+        $categoria_seleccionada = null;
+        unset($filtros['categoria']);
+    }
 } catch (Throwable $error) {
     $error_categorias_navegacion = true;
     error_log('No se pudieron cargar las categorías del detalle.');
@@ -92,6 +96,12 @@ $titulo = $producto['nombre'] ?? ($error_detalle ? 'Producto no disponible' : 'P
                         <h1 id="titulo-producto"><?= escapar_catalogo($producto['nombre']) ?></h1>
                         <p class="detalle__codigo">Código: <strong><?= escapar_catalogo($producto['codigo']) ?></strong></p>
                         <p>Consulta con nuestro equipo sobre este producto.</p>
+                        <button class="solicitud-boton solicitud-boton--agregar" type="button" data-agregar-solicitud="<?= (int) $producto['id_producto'] ?>" title="Agregar a solicitud" disabled>
+                            <svg class="solicitud-icono-carrito" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3h2l2.5 12h11l2-8H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+                            <svg class="solicitud-icono-listo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg>
+                            <span>Agregar a solicitud</span>
+                        </button>
+                        <noscript><p>Activa JavaScript para agregar este producto a tu solicitud.</p></noscript>
                         <a class="btn detalle__whatsapp" href="<?= escapar_catalogo(whatsapp_producto($producto)) ?>" target="_blank" rel="noopener noreferrer">Consultar por WhatsApp <span aria-hidden="true">↗</span></a>
                         <p class="detalle__ayuda">Se abrirá WhatsApp con el nombre y código del producto. Tú decides si envías el mensaje.</p>
                     </div>

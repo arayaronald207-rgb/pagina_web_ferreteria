@@ -143,6 +143,7 @@ require __DIR__ . '/../app/Vistas/plantillas/cabecera_administrativa.php';
 <div class="panel-titulo">
     <p class="panel-etiqueta">CATÁLOGO</p><h1>Productos</h1>
     <p>Administra los artículos y las fotografías que aparecen en el catálogo público.</p>
+    <p class="form-text">Un producto publicado solo aparece públicamente si su categoría también está visible. Las categorías ocultas siguen disponibles para asignar productos.</p>
 </div>
 <p><a class="btn btn-outline-primary panel-boton" href="importar_productos.php">Importar Excel</a></p>
 <?php if (is_string($mensaje) && $mensaje !== ''): ?><p class="alert alert-success panel-aviso" role="status"><?= escapar_panel($mensaje) ?></p><?php endif; ?>

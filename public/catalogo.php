@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'conexion.php';
 
 require_once __DIR__ . '/../app/Servicios/catalogo.php';
+header('Cache-Control: no-store');
 $filtros = filtros_catalogo($_GET);
 $busqueda = $filtros['buscar'] ?? '';
 $categoria_seleccionada = $filtros['categoria'] ?? null;
@@ -16,14 +17,23 @@ $productos = [];
 $listado = ['total' => 0, 'pagina' => 1, 'paginas' => 1];
 $error_catalogo = false;
 $error_categorias_navegacion = true;
+$categoria_no_disponible = false;
 
 try {
     $conexion = obtener_conexion();
 
     $categorias = categorias_catalogo($conexion);
     $error_categorias_navegacion = false;
-    $listado = productos_catalogo($conexion, $busqueda, $categoria_seleccionada, $filtros['pagina'] ?? 1);
-    $productos = $listado['productos'];
+    if ($categoria_seleccionada !== null && !in_array($categoria_seleccionada, array_column($categorias, 'nombre'), true)) {
+        // Un enlace antiguo a una categoría oculta no debe mostrarla como filtro
+        // ni ampliar accidentalmente la consulta a todo el catálogo.
+        $categoria_no_disponible = true;
+        $categoria_seleccionada = null;
+        unset($filtros['categoria']);
+    } else {
+        $listado = productos_catalogo($conexion, $busqueda, $categoria_seleccionada, $filtros['pagina'] ?? 1);
+        $productos = $listado['productos'];
+    }
     unset($filtros['pagina']);
     if ($listado['pagina'] > 1) { $filtros['pagina'] = $listado['pagina']; }
 } catch (Throwable $error) {
@@ -79,6 +89,12 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
                         <p>El catálogo no está disponible en este momento. Inténtalo más tarde.</p>
                         <a class="catalogo__estado-enlace" href="#contacto">Contactar con la ferretería</a>
                     </div>
+                <?php elseif ($categoria_no_disponible): ?>
+                    <div class="catalogo__estado" role="status">
+                        <h2>La categoría seleccionada no está disponible</h2>
+                        <p>Consulta las categorías visibles o busca nuevamente en todo el catálogo.</p>
+                        <a class="catalogo__estado-enlace" href="catalogo.php">Ver catálogo</a>
+                    </div>
                 <?php elseif ($productos === [] && $categoria_seleccionada !== null && $busqueda === ''): ?>
                     <div class="catalogo__estado">
                         <h2>No hay productos publicados en esta categoría</h2>
@@ -98,7 +114,8 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
                         <a class="catalogo__estado-enlace" href="#contacto">Contactar con la ferretería</a>
                     </div>
                 <?php else: ?>
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 catalogo__rejilla">
+                    <p class="catalogo__resumen">Mostrando <?= ($listado['pagina'] - 1) * 12 + 1 ?>–<?= min($listado['pagina'] * 12, $listado['total']) ?> de <?= $listado['total'] ?> productos</p>
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 catalogo__rejilla">
                         <?php foreach ($productos as $producto): ?>
                             <?php $ruta_imagen = ruta_imagen_producto($producto['imagen']);
                             $enlace_detalle = 'producto.php?' . http_build_query(['id' => $producto['id_producto']] + $filtros, '', '&', PHP_QUERY_RFC3986); ?>
@@ -116,7 +133,13 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
                                     <?php if (is_string($producto['descripcion']) && trim($producto['descripcion']) !== ''): ?>
                                         <p class="producto__descripcion"><?= nl2br(escapar_catalogo($producto['descripcion'])) ?></p>
                                     <?php endif; ?>
-                                    <a class="producto__detalles" href="<?= escapar_catalogo($enlace_detalle) ?>">Ver detalles <span aria-hidden="true">→</span></a>
+                                    <div class="producto__acciones">
+                                        <a class="producto__detalles" href="<?= escapar_catalogo($enlace_detalle) ?>">Ver detalles</a>
+                                        <button class="solicitud-boton solicitud-boton--agregar solicitud-boton--icono" type="button" data-agregar-solicitud="<?= (int) $producto['id_producto'] ?>" aria-label="Agregar a solicitud: <?= escapar_catalogo($producto['nombre']) ?>" title="Agregar a solicitud" disabled>
+                                            <svg class="solicitud-icono-bolsa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5.5 8h13l1 12h-15l1-12Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+                                            <svg class="solicitud-icono-listo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg>
+                                        </button>
+                                    </div>
                                     <a class="producto__consulta" href="<?= escapar_catalogo(whatsapp_producto($producto)) ?>" target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
                                 </div>
                             </article></div>
@@ -124,11 +147,25 @@ $filtros_activos = $busqueda !== '' || $categoria_seleccionada !== null;
                     </div>
                 <?php endif; ?>
             </section>
+            <noscript><p>Activa JavaScript para agregar productos a tu solicitud. Puedes seguir consultando por WhatsApp.</p></noscript>
             <?php if (!$error_catalogo && $listado['paginas'] > 1): ?>
                 <nav class="catalogo__paginacion" aria-label="Paginación del catálogo">
-                    <?php if ($listado['pagina'] > 1): ?><a class="btn btn-outline-primary" href="<?= escapar_catalogo(url_catalogo(array_merge($filtros, ['pagina' => $listado['pagina'] - 1]))) ?>#productos">Anterior</a><?php endif; ?>
-                    <span>Página <?= $listado['pagina'] ?> de <?= $listado['paginas'] ?> · <?= $listado['total'] ?> productos</span>
-                    <?php if ($listado['pagina'] < $listado['paginas']): ?><a class="btn btn-outline-primary" href="<?= escapar_catalogo(url_catalogo(array_merge($filtros, ['pagina' => $listado['pagina'] + 1]))) ?>#productos">Siguiente</a><?php endif; ?>
+                    <?php if ($listado['pagina'] > 1): ?>
+                        <a class="catalogo__paso" rel="prev" href="<?= escapar_catalogo(url_catalogo(array_merge($filtros, ['pagina' => $listado['pagina'] - 1]))) ?>#productos">Anterior</a>
+                    <?php else: ?><span class="catalogo__paso" aria-disabled="true">Anterior</span><?php endif; ?>
+                    <ul class="catalogo__paginas">
+                        <?php foreach (paginas_catalogo($listado['pagina'], $listado['paginas']) as $numero): ?>
+                            <li>
+                                <?php if ($numero === null): ?><span class="catalogo__elipsis"><span aria-hidden="true">…</span><span class="solo-lectores">Páginas intermedias</span></span>
+                                <?php elseif ($numero === $listado['pagina']): ?><span class="catalogo__numero" aria-current="page" aria-label="Página <?= $numero ?>, actual"><?= $numero ?></span>
+                                <?php else: ?><a class="catalogo__numero" aria-label="Página <?= $numero ?>" href="<?= escapar_catalogo(url_catalogo(array_merge($filtros, ['pagina' => $numero]))) ?>#productos"><?= $numero ?></a><?php endif; ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php if ($listado['pagina'] < $listado['paginas']): ?>
+                        <a class="catalogo__paso" rel="next" href="<?= escapar_catalogo(url_catalogo(array_merge($filtros, ['pagina' => $listado['pagina'] + 1]))) ?>#productos">Siguiente</a>
+                    <?php else: ?><span class="catalogo__paso" aria-disabled="true">Siguiente</span><?php endif; ?>
+                    <p class="catalogo__pagina-actual">Página <?= $listado['pagina'] ?> de <?= $listado['paginas'] ?></p>
                 </nav>
             <?php endif; ?>
         </div>

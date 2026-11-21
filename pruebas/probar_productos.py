@@ -1,7 +1,9 @@
 """Pruebas del módulo completo en una copia temporal: SQLite, Chrome y sesiones aisladas.
 Ejecutar: python pruebas/probar_productos.py (requiere Playwright y Chrome).
+Añadir --manual para abrir una copia temporal en el navegador y cerrarla con Enter.
 Nunca carga .env ni conecta con MySQL.
 """
+import argparse
 import base64
 from contextlib import closing
 import json
@@ -236,14 +238,17 @@ def run_empty_and_pending(browser, base, root):
     print('OK estados vacíos y módulo pendiente de migración; resto del sitio operativo', flush=True)
 
 
-def main():
+def main(visibilidad_categorias=False):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--manual', action='store_true', help='Mantener la copia temporal abierta para pruebas manuales')
+    manual = parser.parse_args().manual
     with tempfile.TemporaryDirectory(prefix='el-cruce-productos-fixture-') as directory:
         root = Path(directory)
         shutil.copytree(ROOT / 'public', root / 'public')
         shutil.copytree(ROOT / 'app', root / 'app')
         (root / 'config').mkdir()
         (root / 'sesiones').mkdir()
-        (root / 'config/conexion.php').write_text('''<?php
+        conexion_temporal = '''<?php
 function obtener_conexion(): PDO {
     static $db;
     if ($db instanceof PDO) return $db;
@@ -258,7 +263,7 @@ function obtener_conexion(): PDO {
         $q->execute([1,'Administrador de prueba','admin@example.test',$hash,'administrador']);
         $q->execute([2,'Empleado de prueba','empleado@example.test',$hash,'empleado']);
         $db->exec('CREATE TABLE categorias (id_categoria INTEGER PRIMARY KEY, nombre TEXT)');
-        $db->exec("INSERT INTO categorias VALUES (1,'Herramientas'), (2,'Pinturas')");
+        $db->exec("INSERT INTO categorias (id_categoria,nombre) VALUES (1,'Herramientas'), (2,'Pinturas')");
         $db->exec('CREATE TABLE productos (id_producto INTEGER PRIMARY KEY AUTOINCREMENT, codigo TEXT NOT NULL UNIQUE COLLATE NOCASE, nombre TEXT, descripcion TEXT, id_categoria INTEGER REFERENCES categorias, imagen TEXT, visible INTEGER)');
         $q=$db->prepare('INSERT INTO productos (codigo,nombre,descripcion,id_categoria,imagen,visible) VALUES (?,?,?,1,NULL,1)');
         for ($i=1;$i<=21;$i++) $q->execute(['SEED-'.str_pad((string)$i,3,'0',STR_PAD_LEFT),'Artículo '.str_pad((string)$i,3,'0',STR_PAD_LEFT),'Ficticio']);
@@ -269,13 +274,21 @@ function obtener_conexion(): PDO {
     }
     return $db;
 }
-''', encoding='utf-8')
+'''
+        if visibilidad_categorias:
+            conexion_temporal = conexion_temporal.replace('CREATE TABLE categorias (id_categoria INTEGER PRIMARY KEY, nombre TEXT)',
+                'CREATE TABLE categorias (id_categoria INTEGER PRIMARY KEY, nombre TEXT, visible INTEGER NOT NULL DEFAULT 1 CHECK (visible IN (0,1)))')
+        (root / 'config/conexion.php').write_text(conexion_temporal, encoding='utf-8')
         with socket.socket() as sock:
             sock.bind(('127.0.0.1', 0))
             port = sock.getsockname()[1]
         base = f'http://127.0.0.1:{port}/'
         with (ARTIFACTS / 'php.log').open('w') as log:
-            server = subprocess.Popen([PHP, '-d', 'session.save_path="' + (root / 'sesiones').as_posix() + '"', '-d', 'upload_max_filesize=6M', '-d', 'post_max_size=8M', '-S', f'127.0.0.1:{port}', '-t', str(root / 'public')], stdout=log, stderr=log)
+            server = subprocess.Popen([PHP, '-d', 'session.save_path="' + (root / 'sesiones').as_posix() + '"',
+                                       '-d', 'sys_temp_dir="' + root.as_posix() + '"',
+                                       '-d', 'upload_tmp_dir="' + root.as_posix() + '"',
+                                       '-d', 'upload_max_filesize=6M', '-d', 'post_max_size=8M',
+                                       '-S', f'127.0.0.1:{port}', '-t', str(root / 'public')], stdout=log, stderr=log)
             try:
                 for attempt in range(50):
                     try:
@@ -283,6 +296,15 @@ function obtener_conexion(): PDO {
                             break
                     except OSError:
                         time.sleep(.1)
+                else:
+                    raise RuntimeError('No inició el servidor PHP temporal')
+                if manual:
+                    print('Copia aislada con 21 productos ficticios. MySQL y .env no se utilizan.', flush=True)
+                    print('Navegador: ' + base + 'productos.php', flush=True)
+                    print('Administrador: admin@example.test | Empleado: empleado@example.test', flush=True)
+                    print('Contraseña temporal de ambas cuentas: Fixture-Only-123', flush=True)
+                    input('Pulsa Enter para cerrar el servidor y eliminar la copia temporal.\n')
+                    return
                 with sync_playwright() as pw:
                     browser = pw.chromium.launch(executable_path=CHROME, headless=True)
                     try:

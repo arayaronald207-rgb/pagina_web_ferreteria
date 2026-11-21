@@ -28,10 +28,11 @@ $error_categorias_navegacion = $error_categorias_navegacion ?? false;
         </form>
 
         <div class="cabecera__acciones">
-            <button class="boton-lista" type="button" disabled aria-label="Lista de cotización, pendiente">
+            <a class="boton-lista" href="mi_solicitud.php"<?= $pagina_actual === 'solicitud' ? ' aria-current="page"' : '' ?>>
                 <span class="boton-lista__icono" aria-hidden="true"></span>
-                <span class="boton-lista__texto">Mi cotización <small>Pendiente</small></span>
-            </button>
+                <span class="boton-lista__texto">Mi solicitud <small data-solicitud-contador>Revisar lista</small></span>
+                <span class="boton-lista__cantidad" data-solicitud-insignia aria-hidden="true" hidden>0</span>
+            </a>
         </div>
     </div>
 
@@ -69,8 +70,9 @@ $error_categorias_navegacion = $error_categorias_navegacion ?? false;
                     </div>
                 </details>
                 <a class="navegacion__enlace" href="index.php#contacto">Contacto</a>
-                <a class="navegacion__enlace" href="iniciar_sesion.php">Acceso del personal</a>
             </div>
         </nav>
     </div>
 </header>
+<p class="solicitud-notificacion" id="solicitud-notificacion" role="status" aria-live="polite" hidden></p>
+<script src="assets/js/solicitud.js" defer></script>
